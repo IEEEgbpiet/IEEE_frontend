@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 
@@ -16,23 +15,15 @@ export default function LinkCard({
   return (
     <Link
       to={to}
-      className="group flex min-h-32 flex-col justify-between
-        rounded-xl border border-[#263e68] bg-[#101b38]
-        p-5 text-white transition-all duration-200
-        hover:-translate-y-1 hover:border-blue-500
-        hover:bg-[#14264a] hover:shadow-lg
-        hover:shadow-blue-950/30
-        focus-visible:outline-none focus-visible:ring-2
-        focus-visible:ring-blue-500"
+      className="group flex min-h-32 flex-col justify-between rounded-xl border border-white/15 bg-zinc-950 p-6 text-white transition-all duration-200 hover:border-white/40 hover:bg-zinc-900"
     >
       <div>
-        <h2 className="text-base font-semibold tracking-wide
-          transition-colors group-hover:text-blue-400">
+        <h2 className="text-base font-semibold tracking-wide text-white">
           {title}
         </h2>
 
         {description && (
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-xs text-slate-400">
             {description}
           </p>
         )}
@@ -40,9 +31,8 @@ export default function LinkCard({
 
       <div className="mt-4 flex justify-end">
         <ArrowUpRight
-          size={20}
-          className="text-blue-400 transition-transform
-            group-hover:translate-x-1 group-hover:-translate-y-1"
+          size={18}
+          className="text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-white"
         />
       </div>
     </Link>

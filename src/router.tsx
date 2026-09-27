@@ -7,14 +7,14 @@ import HomePage from '@/modules/home/page';
 import TeamsPage from '@/modules/teams/page';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import MainLayout from './components/layout/Layout';
-// import CertificateForm from './components/Certificate';
 import Login from './modules/admin/pages/authentication/components/login';
+import AdminRoutes from './modules/admin/router';
 
 export function AppRouter() {
   return (
     <BrowserRouter>
-      
       <Routes>
+        {/* Main Website Routes */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -23,10 +23,16 @@ export function AppRouter() {
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Route>
-         <Route path='/login' element={<Login />}/>
+
+        {/* Auth Route */}
+        <Route path="/login" element={<Login />} />
+
+        {/* CMS / Admin Portal Nested Routes */}
+        <Route path="/admin/*" element={<AdminRoutes />} />
+
+        {/* 404 Fallback */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
