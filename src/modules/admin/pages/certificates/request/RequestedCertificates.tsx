@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 
@@ -7,9 +6,10 @@ type CertificateRequest = {
   name: string;
   event: string;
   date: string;
+  approved?: boolean;
 };
 
-const requests: CertificateRequest[] = [
+const initialRequests: CertificateRequest[] = [
   {
     id: "REQ-001",
     name: "Aarav Sharma",
@@ -31,18 +31,17 @@ const requests: CertificateRequest[] = [
 ];
 
 export default function RequestedCertificates() {
+  const [requests, setRequests] = useState<CertificateRequest[]>(initialRequests);
   const [search, setSearch] = useState("");
 
- //this is to handle the approve button logic.
   const handleApprove = (requestId: string) => {
-    console.log("Approve request:", requestId);
-
-    // TODO: Add approval API call here
+    setRequests((prev) =>
+      prev.map((r) => (r.id === requestId ? { ...r, approved: true } : r))
+    );
   };
 
   const filteredRequests = useMemo(() => {
     const query = search.trim().toLowerCase();
-
     if (!query) return requests;
 
     return requests.filter((request) =>
@@ -53,15 +52,13 @@ export default function RequestedCertificates() {
         request.id,
       ].some((value) => value.toLowerCase().includes(query))
     );
-  }, [search]);
+  }, [requests, search]);
 
   return (
-    <section className="min-h-full w-full text-white">
-      {/* Heading and search */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row
-        sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold tracking-wide
-          sm:text-2xl">
+    <section className="space-y-6 bg-black text-white">
+      {/* Heading and Search - Exactly as in Page 4 Wireframe */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-4">
+        <h1 className="text-xl font-semibold tracking-wide text-white">
           Requested Certificates
         </h1>
 
@@ -70,48 +67,28 @@ export default function RequestedCertificates() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search requests..."
+            placeholder="Search..."
             aria-label="Search certificate requests"
-            className="w-full rounded-lg border border-[#263e68]
-              bg-[#101b38] py-2.5 pl-4 pr-10 text-sm
-              text-white outline-none placeholder:text-slate-500
-              transition focus:border-blue-500
-              focus:ring-2 focus:ring-blue-500/20"
+            className="w-full rounded-lg border border-white/15 bg-zinc-950 py-2 pl-4 pr-10 text-sm text-white outline-none placeholder:text-slate-500 transition focus:border-white/40"
           />
-
           <Search
             size={18}
-            className="pointer-events-none absolute right-3
-              top-1/2 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
           />
         </div>
       </div>
 
-      {/* Requests table */}
-      <div className="overflow-hidden rounded-xl border
-        border-[#263e68] bg-[#101b38]">
+      {/* Table Container - Exactly as in Page 4 Wireframe */}
+      <div className="overflow-hidden rounded-xl border border-white/15 bg-zinc-950">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]
-            border-collapse text-left text-sm">
+          <table className="w-full min-w-[650px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-[#263e68]
-                bg-[#14264a] text-slate-200">
-                <th className="px-5 py-4 font-semibold">
-                  Name
-                </th>
-                <th className="px-5 py-4 font-semibold">
-                  Event
-                </th>
-                <th className="px-5 py-4 font-semibold">
-                  Date
-                </th>
-                <th className="px-5 py-4 font-semibold">
-                  Req ID
-                </th>
-                <th className="px-5 py-4 text-center
-                  font-semibold">
-                  Action
-                </th>
+              <tr className="border-b border-white/10 bg-zinc-900 text-slate-200">
+                <th className="px-5 py-3.5 font-semibold">Name</th>
+                <th className="px-5 py-3.5 font-semibold">Event</th>
+                <th className="px-5 py-3.5 font-semibold">Date</th>
+                <th className="px-5 py-3.5 font-semibold">Req ID</th>
+                <th className="px-5 py-3.5 text-center font-semibold">Approve</th>
               </tr>
             </thead>
 
@@ -120,12 +97,9 @@ export default function RequestedCertificates() {
                 filteredRequests.map((request) => (
                   <tr
                     key={request.id}
-                    className="border-b border-[#263e68]/70
-                      last:border-0 transition-colors
-                      hover:bg-[#14264a]/70"
+                    className="border-b border-white/5 last:border-0 hover:bg-zinc-900/40"
                   >
-                    <td className="px-5 py-4 font-medium
-                      text-slate-100">
+                    <td className="px-5 py-4 text-white font-medium">
                       {request.name}
                     </td>
 
@@ -133,41 +107,34 @@ export default function RequestedCertificates() {
                       {request.event}
                     </td>
 
-                    <td className="px-5 py-4 text-slate-300">
+                    <td className="px-5 py-4 text-slate-400 text-xs">
                       {request.date}
                     </td>
 
-                    <td className="px-5 py-4 font-mono
-                      text-blue-400">
+                    <td className="px-5 py-4 font-mono text-slate-300 text-xs">
                       {request.id}
                     </td>
 
                     <td className="px-5 py-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleApprove(request.id)}
-                        className="rounded-md bg-blue-600
-                          px-3 py-1.5 text-xs font-medium
-                          text-white transition
-                          hover:bg-blue-700
-                          focus-visible:outline-none
-                          focus-visible:ring-2
-                          focus-visible:ring-blue-400
-                          focus-visible:ring-offset-2
-                          focus-visible:ring-offset-[#101b38]"
-                      >
-                        Approve
-                      </button>
+                      {request.approved ? (
+                        <span className="text-xs text-emerald-400 font-semibold">
+                          Approved
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleApprove(request.id)}
+                          className="rounded-md border border-white/20 bg-zinc-800 px-3 py-1 text-xs font-medium text-white transition hover:bg-zinc-700"
+                        >
+                          Approve
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-5 py-12 text-center
-                      text-slate-400"
-                  >
+                  <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
                     No requests found.
                   </td>
                 </tr>
@@ -176,10 +143,6 @@ export default function RequestedCertificates() {
           </table>
         </div>
       </div>
-
-      <p className="mt-3 text-xs text-slate-500">
-        Showing {filteredRequests.length} of {requests.length} requests
-      </p>
     </section>
   );
 }
