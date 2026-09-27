@@ -8,7 +8,7 @@ import TeamsPage from '@/modules/teams/page';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import MainLayout from './components/layout/Layout';
 // import CertificateForm from './components/Certificate';
-import Login from './modules/admin/authentication/components/login';
+import Login from './modules/admin/pages/authentication/components/login';
 
 export function AppRouter() {
   return (
