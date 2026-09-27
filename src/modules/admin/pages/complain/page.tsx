@@ -41,7 +41,7 @@ export default function SupportTicketsPage() {
   };
 
   return (
-    <section className="space-y-6 bg-black text-white max-w-3xl">
+    <section className="space-y-6 bg-admin-bg text-white max-w-3xl">
       <div className="border-b border-white/10 pb-3 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">
           Full View of Ticket
@@ -53,10 +53,10 @@ export default function SupportTicketsPage() {
               key={t.id}
               type="button"
               onClick={() => setSelectedIndex(idx)}
-              className={`px-2.5 py-1 text-xs rounded border ${
+              className={`px-2.5 py-1 text-xs rounded border transition ${
                 idx === selectedIndex
-                  ? "bg-zinc-800 text-white border-white/30"
-                  : "bg-zinc-950 text-slate-400 border-white/10"
+                  ? "bg-brand-blue text-white border-brand-blue"
+                  : "bg-admin-card text-slate-400 border-white/10 hover:bg-admin-card-hover hover:text-white"
               }`}
             >
               {t.id}
@@ -74,7 +74,7 @@ export default function SupportTicketsPage() {
               <label className="block text-xs text-slate-300 mb-1">
                 Subject
               </label>
-              <div className="h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 flex items-center text-sm text-white truncate">
+              <div className="h-10 rounded-lg border border-white/15 bg-admin-card px-3 flex items-center text-sm text-white truncate">
                 {currentTicket.subject}
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function SupportTicketsPage() {
               <label className="block text-xs text-slate-300 mb-1">
                 File
               </label>
-              <div className="h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 flex items-center text-sm text-slate-300 truncate">
+              <div className="h-10 rounded-lg border border-white/15 bg-admin-card px-3 flex items-center text-sm text-slate-300 truncate">
                 {currentTicket.file || "No attachment"}
               </div>
             </div>
@@ -92,7 +92,7 @@ export default function SupportTicketsPage() {
               <label className="block text-xs text-slate-300 mb-1">
                 Email
               </label>
-              <div className="h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 flex items-center text-sm text-slate-300 truncate">
+              <div className="h-10 rounded-lg border border-white/15 bg-admin-card px-3 flex items-center text-sm text-slate-300 truncate">
                 {currentTicket.email}
               </div>
             </div>
@@ -103,7 +103,7 @@ export default function SupportTicketsPage() {
             <label className="block text-xs text-slate-300 mb-1">
               Description
             </label>
-            <div className="min-h-[140px] rounded-lg border border-white/15 bg-zinc-950 p-3.5 text-sm text-slate-200">
+            <div className="min-h-[140px] rounded-lg border border-white/15 bg-admin-card p-3.5 text-sm text-slate-200">
               {currentTicket.description}
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function SupportTicketsPage() {
               <button
                 type="button"
                 onClick={handleCloseTicket}
-                className="rounded-lg border border-white/20 bg-zinc-900 px-6 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 transition"
+                className="rounded-lg border border-white/20 bg-admin-card px-6 py-2.5 text-xs font-semibold text-white hover:bg-admin-card-hover transition"
               >
                 Close Ticket
               </button>

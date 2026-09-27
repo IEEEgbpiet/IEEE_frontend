@@ -32,12 +32,12 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-admin-bg text-white">
       <Sidebar />
 
-      <main className="min-h-screen pt-16 lg:ml-64 lg:pt-0 flex flex-col bg-black">
+      <main className="min-h-screen pt-16 lg:ml-64 lg:pt-0 flex flex-col bg-admin-bg">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/10 bg-black/90 px-4 sm:px-6 lg:px-8 backdrop-blur-md">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/10 bg-admin-surface/85 px-4 sm:px-6 lg:px-8 backdrop-blur-md">
           <div>
             <h2 className="text-sm font-semibold text-white">
               {getPageTitle()}
@@ -48,7 +48,7 @@ export default function AdminLayout() {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-lg border border-white/15 bg-zinc-900 px-3.5 py-1.5 text-xs font-semibold text-white transition-all hover:bg-zinc-800 hover:border-white/30"
+              className="flex items-center gap-2 rounded-lg border border-white/15 bg-admin-subtle px-3.5 py-1.5 text-xs font-semibold text-white transition-all hover:bg-admin-card-hover hover:border-white/30"
             >
               <LogOut size={14} />
               <span>Logout</span>
@@ -57,7 +57,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-black">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-admin-bg">
           <Outlet />
         </div>
       </main>

@@ -36,7 +36,7 @@ export default function AddDepartmentPost() {
   };
 
   return (
-    <section className="space-y-6 bg-black text-white max-w-2xl">
+    <section className="space-y-6 bg-admin-bg text-white max-w-2xl">
       <div className="border-b border-white/10 pb-3">
         <h1 className="text-xl font-semibold text-white">
           Create a New post
@@ -56,7 +56,7 @@ export default function AddDepartmentPost() {
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             placeholder="Post Title"
-            className="w-full h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 text-sm text-white outline-none focus:border-white/40"
+            className="w-full h-10 rounded-lg border border-white/15 bg-admin-card px-3 text-sm text-white outline-none focus:border-blue-400/50"
           />
         </div>
 
@@ -71,7 +71,7 @@ export default function AddDepartmentPost() {
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 text-sm text-white outline-none focus:border-white/40"
+              className="w-full h-10 rounded-lg border border-white/15 bg-admin-card px-3 text-sm text-white outline-none focus:border-blue-400/50"
             />
           </div>
 
@@ -82,10 +82,10 @@ export default function AddDepartmentPost() {
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 text-sm text-white outline-none focus:border-white/40"
+              className="w-full h-10 rounded-lg border border-white/15 bg-admin-card px-3 text-sm text-white outline-none focus:border-blue-400/50"
             >
               {categories.map((c) => (
-                <option key={c} value={c} className="bg-zinc-950 text-white">
+                <option key={c} value={c} className="bg-admin-surface text-white">
                   {c}
                 </option>
               ))}
@@ -104,7 +104,7 @@ export default function AddDepartmentPost() {
             value={formData.overview}
             onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
             placeholder="Post details..."
-            className="w-full rounded-lg border border-white/15 bg-zinc-950 p-3 text-sm text-white outline-none focus:border-white/40"
+            className="w-full rounded-lg border border-white/15 bg-admin-card p-3 text-sm text-white outline-none focus:border-blue-400/50"
           />
         </div>
 
@@ -113,14 +113,14 @@ export default function AddDepartmentPost() {
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-lg border border-white/15 bg-zinc-950 px-5 py-2.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-zinc-900 transition"
+            className="rounded-lg border border-white/15 bg-admin-card px-5 py-2.5 text-xs font-medium text-slate-300 hover:text-white hover:bg-admin-card-hover transition"
           >
             Reset
           </button>
 
           <button
             type="submit"
-            className="rounded-lg border border-white/20 bg-zinc-900 px-6 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 transition"
+            className="rounded-lg border border-brand-blue/30 bg-brand-blue px-6 py-2.5 text-xs font-semibold text-white hover:bg-brand-blue-dark transition"
           >
             Create
           </button>

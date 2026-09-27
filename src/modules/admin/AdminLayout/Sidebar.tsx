@@ -63,7 +63,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile menu bar */}
-      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/10 bg-black px-4 text-white lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/10 bg-admin-surface px-4 text-white lg:hidden">
         <div className="flex items-center gap-3">
           <img
             src="/images/IeeeLogo.webp"
@@ -89,13 +89,13 @@ export default function Sidebar() {
           type="button"
           aria-label="Close navigation menu"
           onClick={() => setIsOpen(false)}
-          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-admin-bg/80 backdrop-blur-sm lg:hidden"
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/10 bg-black text-white transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/10 bg-admin-surface text-white transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -103,7 +103,7 @@ export default function Sidebar() {
         <div className="border-b border-white/10 p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-zinc-900 p-1">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-admin-subtle p-1">
                 <img
                   src="/images/IeeeLogo.webp"
                   alt="IEEE"
@@ -141,7 +141,7 @@ export default function Sidebar() {
                 className={({ isActive }) =>
                   `group flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-white/10 text-white border border-white/15"
+                      ? "bg-brand-blue/15 text-blue-300 border border-brand-blue/30"
                       : "text-slate-400 hover:bg-white/5 hover:text-white"
                   }`
                 }
@@ -150,7 +150,7 @@ export default function Sidebar() {
                   <>
                     <Icon
                       size={18}
-                      className={isActive ? "text-white" : "text-slate-400 group-hover:text-white"}
+                      className={isActive ? "text-brand-blue-light" : "text-slate-400 group-hover:text-white"}
                       strokeWidth={isActive ? 2.2 : 1.8}
                     />
                     <span className="truncate">{item.label}</span>

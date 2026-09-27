@@ -5,7 +5,7 @@ export default function DepartmentDetail() {
   const { dept = "CSE" } = useParams<{ dept: string }>();
 
   return (
-    <div className="space-y-6 bg-black text-white">
+    <div className="space-y-6 bg-admin-bg text-white">
       <div className="border-b border-white/10 pb-3">
         <h1 className="text-xl font-semibold text-white">
           {dept.toUpperCase()} Department

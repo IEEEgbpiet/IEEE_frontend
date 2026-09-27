@@ -15,7 +15,7 @@ export default function LinkCard({
   return (
     <Link
       to={to}
-      className="group flex min-h-32 flex-col justify-between rounded-xl border border-white/15 bg-zinc-950 p-6 text-white transition-all duration-200 hover:border-white/40 hover:bg-zinc-900"
+      className="group flex min-h-32 flex-col justify-between rounded-xl border border-white/15 bg-admin-card p-6 text-white transition-all duration-200 hover:border-blue-400/40 hover:bg-admin-card-hover"
     >
       <div>
         <h2 className="text-base font-semibold tracking-wide text-white">
