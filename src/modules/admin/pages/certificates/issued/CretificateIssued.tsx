@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, ArrowLeft, Award, Calendar, Sparkles } from "lucide-react";
+import { adminApi } from '@/services/adminApi';
 
 type Certificate = {
   id: string;
@@ -9,30 +10,41 @@ type Certificate = {
   issueDate: string;
 };
 
-const initialCertificates: Certificate[] = [
-  {
-    id: "CERT-001",
-    name: "Aarav Sharma",
-    event: "Web Development Workshop",
-    issueDate: "12 Sep 2026",
-  },
-  {
-    id: "CERT-002",
-    name: "Priya Singh",
-    event: "AI Workshop",
-    issueDate: "15 Sep 2026",
-  },
-  {
-    id: "CERT-003",
-    name: "Rahul Verma",
-    event: "Technical Symposium",
-    issueDate: "18 Sep 2026",
-  },
-];
-
 export default function IssuedCertificates() {
-  const [certificates] = useState<Certificate[]>(initialCertificates);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadCertificates = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await adminApi.getCertificateApplications();
+        const data = response?.data ?? [];
+
+        setCertificates(
+          data.map((item: Record<string, unknown>, index: number) => ({
+            id: String((item.certificateId ?? item._id ?? `CERT-${index + 1}`) as string),
+            name: String((item.name ?? 'Unknown') as string),
+            event: String((item.eventName ?? 'Event') as string),
+            issueDate: item.updatedAt ? new Date(String(item.updatedAt)).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            }) : 'N/A',
+          })),
+        );
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Unable to load certificate data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadCertificates();
+  }, []);
 
   const filteredCertificates = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -85,6 +97,8 @@ export default function IssuedCertificates() {
         </div>
       </div>
 
+      {error ? <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
+
       {/* Modern Table Container */}
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface shadow-2xl">
         <div className="overflow-x-auto">
@@ -99,7 +113,13 @@ export default function IssuedCertificates() {
             </thead>
 
             <tbody className="divide-y divide-white/5">
-              {filteredCertificates.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-slate-500 text-sm">
+                    Loading issued certificates…
+                  </td>
+                </tr>
+              ) : filteredCertificates.length > 0 ? (
                 filteredCertificates.map((certificate) => (
                   <tr
                     key={certificate.id}

@@ -10,6 +10,7 @@ import {
   AlignLeft,
   PlusCircle,
 } from "lucide-react";
+import { adminApi } from '@/services/adminApi';
 
 export default function AddUpcomingPost() {
   const navigate = useNavigate();
@@ -17,11 +18,34 @@ export default function AddUpcomingPost() {
   const [regDate, setRegDate] = useState("");
   const [overview, setOverview] = useState("");
   const [imageName, setImageName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !regDate) return;
-    navigate("/admin/upcoming-posts/manage");
+
+    try {
+      setIsSubmitting(true);
+      setError('');
+      const formData = new FormData();
+      formData.append('eventName', title);
+      formData.append('title', title);
+      formData.append('date', regDate);
+      formData.append('lastDate', regDate);
+      formData.append('overview', overview);
+      const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+      if (fileInput?.files?.[0]) {
+        formData.append('image', fileInput.files[0]);
+      }
+
+      await adminApi.createUpcomingEvent(formData);
+      navigate('/admin/upcoming-posts/manage');
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Unable to create upcoming event.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -56,6 +80,8 @@ export default function AddUpcomingPost() {
       </div>
 
       {/* Styled Form Card */}
+      {error ? <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
+
       <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface p-6 sm:p-8 shadow-2xl">
         {/* Accent top highlight */}
         <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/70 to-transparent" />
@@ -156,10 +182,11 @@ export default function AddUpcomingPost() {
           <div className="pt-2 flex items-center gap-3">
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(43,123,255,0.3)] hover:shadow-[0_4px_24px_rgba(43,123,255,0.45)] hover:from-blue-500 hover:to-blue-600 active:scale-[0.98] transition-all duration-200"
+              disabled={isSubmitting}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(43,123,255,0.3)] hover:shadow-[0_4px_24px_rgba(43,123,255,0.45)] hover:from-blue-500 hover:to-blue-600 active:scale-[0.98] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70"
             >
               <PlusCircle size={16} />
-              <span>Publish Event Post</span>
+              <span>{isSubmitting ? 'Publishing...' : 'Publish Event Post'}</span>
             </button>
 
             <button

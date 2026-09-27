@@ -1,10 +1,12 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { LogOut } from "lucide-react";
+import { useAuth } from '@/context/AuthContext';
 import Sidebar from "./Sidebar";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const getPageTitle = () => {
     const path = location.pathname;
@@ -28,6 +30,7 @@ export default function AdminLayout() {
   };
 
   const handleLogout = () => {
+    logout();
     navigate("/login");
   };
 

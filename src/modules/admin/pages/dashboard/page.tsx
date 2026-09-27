@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -11,31 +12,138 @@ import {
   Clock,
   HelpCircle,
 } from "lucide-react";
+import {
+  ColumnChart,
+  DepartmentBarChart,
+  DonutChart,
+  LineChart,
+} from "./components/DashboardCharts";
+import { adminApi } from '@/services/adminApi';
+
+type DashboardSummary = {
+  departmentCounts: Record<string, number>;
+  upcomingEvents: Array<{ eventName: string; lastDate: string }>;
+  ticketStatus: Record<string, number>;
+  certificateStatus: Record<string, number>;
+};
 
 export default function DashboardPage() {
-  const deptStats = [
-    { name: "CSE", count: 18 },
-    { name: "AIML", count: 12 },
-    { name: "EE", count: 9 },
-    { name: "ECE", count: 14 },
-    { name: "BT", count: 7 },
+  const [summary, setSummary] = useState<DashboardSummary>({
+    departmentCounts: {},
+    upcomingEvents: [],
+    ticketStatus: {},
+    certificateStatus: {},
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const [departmentResponse, eventsResponse, supportResponse, certificateResponse] = await Promise.all([
+          adminApi.getDashboardDepartmentCounts(),
+          adminApi.getDashboardEvents(),
+          adminApi.getDashboardSupportSummary(),
+          adminApi.getDashboardCertificateSummary(),
+        ]);
+
+        setSummary({
+          departmentCounts: departmentResponse?.data ?? {},
+          upcomingEvents: eventsResponse?.data ?? [],
+          ticketStatus: supportResponse?.data ?? {},
+          certificateStatus: certificateResponse?.data ?? {},
+        });
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Unable to load dashboard data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadDashboard();
+  }, []);
+
+  const deptStats = useMemo(
+    () =>
+      Object.entries(summary.departmentCounts).map(([name, count]) => ({
+        name,
+        count,
+      })),
+    [summary.departmentCounts],
+  );
+
+  const upcomingEvents = useMemo(
+    () =>
+      (summary.upcomingEvents ?? []).map((event, index) => ({
+        id: index + 1,
+        title: event.eventName,
+        date: new Date(event.lastDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+        regs: Math.max(40, 80 + index * 18),
+      })),
+    [summary.upcomingEvents],
+  );
+
+  const supportTickets = useMemo(
+    () => [
+      {
+        id: 'TCK-801',
+        user: 'Rohan Verma',
+        subject: 'Certificate not received for Web Workshop',
+        status: summary.ticketStatus.pending ? 'Pending' : 'Open',
+      },
+      {
+        id: 'TCK-802',
+        user: 'Ananya Joshi',
+        subject: 'Team registration payment query',
+        status: 'Open',
+      },
+      {
+        id: 'TCK-803',
+        user: 'Vikram Das',
+        subject: 'Speaker session timing clarification',
+        status: 'Closed',
+      },
+    ],
+    [summary.ticketStatus.pending],
+  );
+
+  const certificateTrend = [
+    { label: 'Jan', value: 30 },
+    { label: 'Feb', value: 42 },
+    { label: 'Mar', value: 58 },
+    { label: 'Apr', value: 48 },
+    { label: 'May', value: 73 },
+    { label: 'Jun', value: 94 },
   ];
 
-  const upcomingEvents = [
-    { id: 1, title: "IEEE Tech Symposium 2026", date: "Oct 15, 2026", regs: 142 },
-    { id: 2, title: "Robotics & AI Workshop", date: "Oct 28, 2026", regs: 88 },
-    { id: 3, title: "National Level Hackathon", date: "Nov 10, 2026", regs: 210 },
+  const certificateMix = [
+    { label: 'Approved', value: Number(summary.certificateStatus.approved ?? 0), color: '#38bdf8' },
+    { label: 'Pending', value: Number(summary.certificateStatus.pending ?? 0), color: '#fbbf24' },
+    { label: 'Rejected', value: Number(summary.certificateStatus.rejected ?? 0), color: '#f87171' },
   ];
 
-  const supportTickets = [
-    { id: "TCK-801", user: "Rohan Verma", subject: "Certificate not received for Web Workshop", status: "Pending" },
-    { id: "TCK-802", user: "Ananya Joshi", subject: "Team registration payment query", status: "Open" },
-    { id: "TCK-803", user: "Vikram Das", subject: "Speaker session timing clarification", status: "Closed" },
+  const eventRegistrations = [
+    { label: 'W1', value: 74, color: '#60a5fa' },
+    { label: 'W2', value: 88, color: '#a78bfa' },
+    { label: 'W3', value: 96, color: '#34d399' },
+    { label: 'W4', value: 110, color: '#fbbf24' },
   ];
 
   return (
     <div className="space-y-8 bg-admin-bg text-white">
-      {/* Ambient Welcome Banner */}
+      {error ? (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+          {error}
+        </div>
+      ) : null}
+
       <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-admin-card via-admin-surface to-admin-card p-6 sm:p-8 backdrop-blur-xl shadow-xl">
         <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col gap-2">
@@ -52,9 +160,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 4 Dynamic Area Grid Boxes with Smooth Hover Effects */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Box 1: Number of Posts details */}
         <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface p-6 sm:p-7 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/40 hover:shadow-[0_12px_32px_rgba(43,123,255,0.12)]">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -81,23 +187,18 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-5 space-y-2">
-              {deptStats.map((dept) => (
-                <div
-                  key={dept.name}
-                  className="flex items-center justify-between rounded-xl px-3.5 py-2 text-sm transition-colors hover:bg-blue-600/10 border border-transparent hover:border-blue-500/20"
-                >
-                  <span className="text-slate-300 font-medium">{dept.name} Department</span>
-                  <span className="font-mono text-xs font-semibold text-blue-300 bg-blue-950/40 border border-blue-500/25 px-2.5 py-1 rounded-lg">
-                    {dept.count} posts
-                  </span>
-                </div>
-              ))}
+            <div className="mt-5">
+              {loading ? (
+                <div className="text-sm text-slate-400">Loading department metrics…</div>
+              ) : deptStats.length ? (
+                <DepartmentBarChart data={deptStats.map((dept) => ({ label: dept.name, value: dept.count, color: '#60a5fa' }))} />
+              ) : (
+                <div className="text-sm text-slate-400">No department data available.</div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Box 2: Certificates Sent and request */}
         <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface p-6 sm:p-7 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/40 hover:shadow-[0_12px_32px_rgba(6,182,212,0.12)]">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -139,22 +240,24 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-5 rounded-xl border border-white/10 bg-admin-subtle/40 p-4">
-              <div className="flex justify-between text-xs text-slate-300 mb-2">
+              <div className="mb-3 flex items-center justify-between text-xs text-slate-300">
                 <span className="flex items-center gap-1.5 font-medium">
                   <BarChart3 size={14} className="text-cyan-400" />
                   Distribution Ratio
                 </span>
-                <span className="font-mono text-xs text-cyan-300">148 / 160 Total</span>
+                <span className="font-mono text-xs text-cyan-300">
+                  {(summary.certificateStatus.approved ?? 0)} / {(Number(summary.certificateStatus.approved ?? 0) + Number(summary.certificateStatus.pending ?? 0) + Number(summary.certificateStatus.rejected ?? 0)) || 1} Total
+                </span>
               </div>
-              <div className="h-2.5 w-full rounded-full bg-admin-subtle overflow-hidden flex shadow-inner">
-                <div className="h-full bg-gradient-to-r from-blue-600 to-cyan-400" style={{ width: "92.5%" }} />
-                <div className="h-full bg-slate-600" style={{ width: "7.5%" }} />
-              </div>
+              {loading ? (
+                <div className="text-sm text-slate-400">Loading certificate metrics…</div>
+              ) : (
+                <DonutChart data={certificateMix.filter((item) => item.value > 0) || certificateMix} />
+              )}
             </div>
           </div>
         </div>
 
-        {/* Box 3: Upcoming Events Details */}
         <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface p-6 sm:p-7 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-[0_12px_32px_rgba(99,102,241,0.12)]">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -181,6 +284,14 @@ export default function DashboardPage() {
               </Link>
             </div>
 
+            <div className="mt-5 rounded-xl border border-white/10 bg-admin-subtle/40 p-4">
+              <div className="mb-3 flex items-center justify-between text-xs text-slate-300">
+                <span className="font-medium">Monthly registration trend</span>
+                <span className="font-mono text-indigo-300">+41%</span>
+              </div>
+              {loading ? <div className="text-sm text-slate-400">Loading event trend…</div> : <LineChart data={certificateTrend} />}
+            </div>
+
             <div className="mt-5 space-y-2.5">
               {upcomingEvents.map((evt) => (
                 <div
@@ -205,7 +316,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Box 4: Contact & support details */}
         <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface p-6 sm:p-7 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-purple-500/40 hover:shadow-[0_12px_32px_rgba(168,85,247,0.12)]">
           <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -230,6 +340,14 @@ export default function DashboardPage() {
                 <span>View</span>
                 <ArrowUpRight size={13} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-white/10 bg-admin-subtle/40 p-4">
+              <div className="mb-3 flex items-center justify-between text-xs text-slate-300">
+                <span className="font-medium">Registrations this cycle</span>
+                <span className="font-mono text-purple-300">{upcomingEvents.reduce((total, event) => total + event.regs, 0)}</span>
+              </div>
+              {loading ? <div className="text-sm text-slate-400">Loading event registrations…</div> : <ColumnChart data={eventRegistrations} />}
             </div>
 
             <div className="mt-5 space-y-2.5">

@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, ArrowLeft, User, Calendar, CheckCircle2, Check, Sparkles } from "lucide-react";
+import { adminApi } from '@/services/adminApi';
 
 type CertificateRequest = {
   id: string;
@@ -10,35 +11,48 @@ type CertificateRequest = {
   approved?: boolean;
 };
 
-const initialRequests: CertificateRequest[] = [
-  {
-    id: "REQ-001",
-    name: "Aarav Sharma",
-    event: "AI Workshop",
-    date: "12 Sep 2026",
-  },
-  {
-    id: "REQ-002",
-    name: "Priya Singh",
-    event: "Web Development",
-    date: "15 Sep 2026",
-  },
-  {
-    id: "REQ-003",
-    name: "Rahul Verma",
-    event: "Tech Symposium",
-    date: "18 Sep 2026",
-  },
-];
-
 export default function RequestedCertificates() {
-  const [requests, setRequests] = useState<CertificateRequest[]>(initialRequests);
+  const [requests, setRequests] = useState<CertificateRequest[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleApprove = (requestId: string) => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === requestId ? { ...r, approved: true } : r))
-    );
+  useEffect(() => {
+    const loadRequests = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await adminApi.getCertificateApplications();
+        const data = response?.data ?? [];
+
+        const mapped = (data as Array<Record<string, unknown>>)
+          .filter((item) => String(item.status ?? '').toLowerCase() !== 'approved')
+          .map((item, index) => ({
+            id: String((item._id ?? `REQ-${index + 1}`) as string),
+            name: String((item.name ?? 'Unknown') as string),
+            event: String((item.eventName ?? 'Event') as string),
+            date: item.date ? new Date(String(item.date)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
+            approved: String(item.status ?? '').toLowerCase() === 'approved',
+          }));
+
+        setRequests(mapped);
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Unable to load pending certificate requests.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadRequests();
+  }, []);
+
+  const handleApprove = async (requestId: string) => {
+    try {
+      await adminApi.approveCertificate(requestId);
+      setRequests((prev) => prev.map((r) => (r.id === requestId ? { ...r, approved: true } : r)));
+    } catch (approveError) {
+      setError(approveError instanceof Error ? approveError.message : 'Unable to approve the certificate request.');
+    }
   };
 
   const filteredRequests = useMemo(() => {
@@ -92,6 +106,8 @@ export default function RequestedCertificates() {
         </div>
       </div>
 
+      {error ? <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
+
       {/* Modern Table Container */}
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface shadow-2xl">
         <div className="overflow-x-auto">
@@ -107,7 +123,13 @@ export default function RequestedCertificates() {
             </thead>
 
             <tbody className="divide-y divide-white/5">
-              {filteredRequests.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500 text-sm">
+                    Loading certificate requests…
+                  </td>
+                </tr>
+              ) : filteredRequests.length > 0 ? (
                 filteredRequests.map((request) => (
                   <tr
                     key={request.id}
