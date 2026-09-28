@@ -36,7 +36,7 @@ export default function DepartmentPostsDirectory() {
   };
 
   return (
-    <section className="space-y-6 bg-black text-white">
+    <section className="space-y-6 bg-admin-bg text-white">
       <div className="border-b border-white/10 pb-3">
         <h1 className="text-xl font-semibold text-white">
           Department posts Directory
@@ -44,11 +44,11 @@ export default function DepartmentPostsDirectory() {
       </div>
 
       {/* Table matching Page 13 Wireframe */}
-      <div className="overflow-hidden rounded-xl border border-white/15 bg-zinc-950">
+      <div className="overflow-hidden rounded-xl border border-white/15 bg-admin-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[650px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-zinc-900 text-slate-200">
+              <tr className="border-b border-white/10 bg-admin-subtle text-slate-200">
                 <th className="px-5 py-3.5 font-semibold">Event Name</th>
                 <th className="px-5 py-3.5 font-semibold">Date</th>
                 <th className="px-5 py-3.5 font-semibold">Id</th>
@@ -61,7 +61,7 @@ export default function DepartmentPostsDirectory() {
               {posts.map((post) => (
                 <tr
                   key={post.id}
-                  className="border-b border-white/5 last:border-0 hover:bg-zinc-900/40"
+                  className="border-b border-white/5 last:border-0 hover:bg-admin-card-hover/50"
                 >
                   <td className="px-5 py-4 text-white font-medium">
                     {post.name}
@@ -79,7 +79,7 @@ export default function DepartmentPostsDirectory() {
                     <button
                       type="button"
                       onClick={() => navigate(`/admin/department-posts/${dept}/edit/${post.id}`)}
-                      className="rounded-md border border-white/20 bg-zinc-800 px-3 py-1 text-xs font-medium text-white transition hover:bg-zinc-700"
+                      className="rounded-md border border-white/20 bg-admin-subtle px-3 py-1 text-xs font-medium text-white transition hover:bg-admin-card-hover"
                     >
                       Edit
                     </button>

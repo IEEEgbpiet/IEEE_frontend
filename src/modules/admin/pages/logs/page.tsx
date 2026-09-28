@@ -40,18 +40,18 @@ export default function LogsPage() {
   const [logs] = useState<LogEntry[]>(initialLogs);
 
   return (
-    <div className="space-y-6 bg-black text-white">
+    <div className="space-y-6 bg-admin-bg text-white">
       <div className="border-b border-white/10 pb-3">
         <h1 className="text-xl font-semibold text-white">
           Logs & Setting
         </h1>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-white/15 bg-zinc-950">
+      <div className="overflow-hidden rounded-xl border border-white/15 bg-admin-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[650px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-zinc-900 text-slate-200">
+              <tr className="border-b border-white/10 bg-admin-subtle text-slate-200">
                 <th className="px-5 py-3.5 font-semibold">Log ID</th>
                 <th className="px-5 py-3.5 font-semibold">Action</th>
                 <th className="px-5 py-3.5 font-semibold">Module</th>
@@ -64,7 +64,7 @@ export default function LogsPage() {
               {logs.map((log) => (
                 <tr
                   key={log.id}
-                  className="border-b border-white/5 last:border-0 hover:bg-zinc-900/40"
+                  className="border-b border-white/5 last:border-0 hover:bg-admin-card-hover/50"
                 >
                   <td className="px-5 py-4 font-mono text-xs text-slate-300">
                     {log.id}

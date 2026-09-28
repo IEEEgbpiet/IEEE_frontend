@@ -7,6 +7,12 @@
   --color-brand-blue-cta: #0b63ff;
   --color-brand-navy: #020817;
   --color-brand-navy-deep: #050b18;
+
+  --color-admin-bg: #020817;
+  --color-admin-surface: #061024;
+  --color-admin-card: #0b1a36;
+  --color-admin-card-hover: #10244c;
+  --color-admin-subtle: #0f2142;
 }
 
 /* Filter dropdown animation */

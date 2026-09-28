@@ -1,16 +1,35 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 export default function App() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Navigate to admin portal dashboard
-    navigate('/admin');
+
+    if (!username.trim() || !password.trim()) {
+      setError('Please enter both username and password.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await login(username, password);
+      navigate('/admin');
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Unable to sign in. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -32,6 +51,12 @@ export default function App() {
         </div>
 
         {/* FORM */}
+        {error ? (
+          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+            {error}
+          </div>
+        ) : null}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* USERNAME */}
           <div>
@@ -168,6 +193,7 @@ export default function App() {
           {/* SIGN IN */}
           <button
             type="submit"
+            disabled={isSubmitting}
             className="
               mt-2
               h-12
@@ -185,9 +211,11 @@ export default function App() {
               focus:ring-2
               focus:ring-[#00629B]
               focus:ring-offset-2
+              disabled:cursor-not-allowed
+              disabled:opacity-70
             "
           >
-            Sign In
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
       </div>

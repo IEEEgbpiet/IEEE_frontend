@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { adminApi } from '@/services/adminApi';
 
 type Ticket = {
   id: string;
@@ -9,39 +10,57 @@ type Ticket = {
   status: "Open" | "Closed";
 };
 
-const initialTickets: Ticket[] = [
-  {
-    id: "TCK-801",
-    subject: "Certificate not received for Web Workshop",
-    email: "rohan.verma@gbpiet.ac.in",
-    file: "receipt.pdf",
-    description: "I attended the workshop but my certificate verification ID is not showing up. Please verify and issue the certificate.",
-    status: "Open",
-  },
-  {
-    id: "TCK-802",
-    subject: "Team registration payment query",
-    email: "ananya.joshi@gbpiet.ac.in",
-    file: "payment_ss.png",
-    description: "Our team registered for the hackathon and completed payment. Need confirmation.",
-    status: "Open",
-  },
-];
-
 export default function SupportTicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadTickets = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await adminApi.getSupportTickets();
+        const data = response?.tickets ?? [];
+
+        setTickets(
+          data.map((item: Record<string, unknown>, index: number) => ({
+            id: String((item.ticketId ?? item._id ?? `TCK-${index + 1}`) as string),
+            subject: String((item.subject ?? 'Support enquiry') as string),
+            email: String((item.email ?? 'unknown@example.com') as string),
+            file: '',
+            description: String((item.description ?? 'No description available.') as string),
+            status: String((item.solvedStatus ?? 'pending') as string).toLowerCase() === 'solved' ? 'Closed' : 'Open',
+          })),
+        );
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : 'Unable to load support tickets.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadTickets();
+  }, []);
 
   const currentTicket = tickets[selectedIndex] || tickets[0];
 
-  const handleCloseTicket = () => {
-    setTickets((prev) =>
-      prev.map((t, i) => (i === selectedIndex ? { ...t, status: "Closed" } : t))
-    );
+  const handleCloseTicket = async () => {
+    if (!currentTicket) return;
+
+    try {
+      const ticketId = currentTicket.id.includes('TCK') ? currentTicket.id : currentTicket.id;
+      await adminApi.closeSupportTicket(String(ticketId));
+      setTickets((prev) => prev.map((t, i) => (i === selectedIndex ? { ...t, status: 'Closed' } : t)));
+    } catch (closeError) {
+      setError(closeError instanceof Error ? closeError.message : 'Unable to close ticket.');
+    }
   };
 
   return (
-    <section className="space-y-6 bg-black text-white max-w-3xl">
+    <section className="space-y-6 bg-admin-bg text-white max-w-3xl">
+      {error ? <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
       <div className="border-b border-white/10 pb-3 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">
           Full View of Ticket
@@ -53,10 +72,10 @@ export default function SupportTicketsPage() {
               key={t.id}
               type="button"
               onClick={() => setSelectedIndex(idx)}
-              className={`px-2.5 py-1 text-xs rounded border ${
+              className={`px-2.5 py-1 text-xs rounded border transition ${
                 idx === selectedIndex
-                  ? "bg-zinc-800 text-white border-white/30"
-                  : "bg-zinc-950 text-slate-400 border-white/10"
+                  ? "bg-brand-blue text-white border-brand-blue"
+                  : "bg-admin-card text-slate-400 border-white/10 hover:bg-admin-card-hover hover:text-white"
               }`}
             >
               {t.id}
@@ -64,6 +83,8 @@ export default function SupportTicketsPage() {
           ))}
         </div>
       </div>
+
+      {loading ? <div className="text-sm text-slate-400">Loading tickets…</div> : null}
 
       {/* Ticket View matching Page 15 Wireframe */}
       {currentTicket && (
@@ -74,7 +95,7 @@ export default function SupportTicketsPage() {
               <label className="block text-xs text-slate-300 mb-1">
                 Subject
               </label>
-              <div className="h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 flex items-center text-sm text-white truncate">
+              <div className="h-10 rounded-lg border border-white/15 bg-admin-card px-3 flex items-center text-sm text-white truncate">
                 {currentTicket.subject}
               </div>
             </div>
@@ -83,7 +104,7 @@ export default function SupportTicketsPage() {
               <label className="block text-xs text-slate-300 mb-1">
                 File
               </label>
-              <div className="h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 flex items-center text-sm text-slate-300 truncate">
+              <div className="h-10 rounded-lg border border-white/15 bg-admin-card px-3 flex items-center text-sm text-slate-300 truncate">
                 {currentTicket.file || "No attachment"}
               </div>
             </div>
@@ -92,7 +113,7 @@ export default function SupportTicketsPage() {
               <label className="block text-xs text-slate-300 mb-1">
                 Email
               </label>
-              <div className="h-10 rounded-lg border border-white/15 bg-zinc-950 px-3 flex items-center text-sm text-slate-300 truncate">
+              <div className="h-10 rounded-lg border border-white/15 bg-admin-card px-3 flex items-center text-sm text-slate-300 truncate">
                 {currentTicket.email}
               </div>
             </div>
@@ -103,7 +124,7 @@ export default function SupportTicketsPage() {
             <label className="block text-xs text-slate-300 mb-1">
               Description
             </label>
-            <div className="min-h-[140px] rounded-lg border border-white/15 bg-zinc-950 p-3.5 text-sm text-slate-200">
+            <div className="min-h-[140px] rounded-lg border border-white/15 bg-admin-card p-3.5 text-sm text-slate-200">
               {currentTicket.description}
             </div>
           </div>
@@ -114,7 +135,7 @@ export default function SupportTicketsPage() {
               <button
                 type="button"
                 onClick={handleCloseTicket}
-                className="rounded-lg border border-white/20 bg-zinc-900 px-6 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 transition"
+                className="rounded-lg border border-white/20 bg-admin-card px-6 py-2.5 text-xs font-semibold text-white hover:bg-admin-card-hover transition"
               >
                 Close Ticket
               </button>

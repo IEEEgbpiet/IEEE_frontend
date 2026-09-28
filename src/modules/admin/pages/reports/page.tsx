@@ -32,7 +32,7 @@ export default function ReportsPage() {
   const [reports] = useState<ReportItem[]>(initialReports);
 
   return (
-    <div className="space-y-6 bg-black text-white">
+    <div className="space-y-6 bg-admin-bg text-white">
       <div className="border-b border-white/10 pb-3">
         <h1 className="text-xl font-semibold text-white">
           Reports & Minutes of Meeting
@@ -43,7 +43,7 @@ export default function ReportsPage() {
         {reports.map((item) => (
           <div
             key={item.id}
-            className="flex flex-col justify-between rounded-xl border border-white/15 bg-zinc-950 p-5"
+            className="flex flex-col justify-between rounded-xl border border-white/15 bg-admin-card p-5"
           >
             <div>
               <span className="text-[11px] font-mono text-slate-400">
@@ -58,7 +58,7 @@ export default function ReportsPage() {
               <span className="font-mono text-xs text-slate-500">{item.id}</span>
               <button
                 type="button"
-                className="text-xs text-white border border-white/20 bg-zinc-900 px-3 py-1 rounded hover:bg-zinc-800"
+                className="text-xs text-white border border-white/20 bg-admin-subtle px-3 py-1 rounded hover:bg-admin-card-hover"
               >
                 Download
               </button>
