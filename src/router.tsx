@@ -7,7 +7,7 @@ import HomePage from '@/modules/home/page';
 import TeamsPage from '@/modules/teams/page';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import MainLayout from './components/layout/Layout';
-//import PrivateRoute from './components/PrivateRoute'; //Also uncomment this later.
+import PrivateRoute from './components/PrivateRoute'; //Also uncomment this later.
 import Login from './modules/admin/pages/authentication/components/login';
 import AdminRoutes from './modules/admin/router';
 
@@ -31,11 +31,11 @@ export function AppRouter() {
         {/* CMS / Admin Portal Nested Routes */}
         <Route
           path="/admin/*"
-          element={ //Don't uncomment this as this is for the display of the admin route without user authentication. Uncomment Later 
-            //<PrivateRoute>
+          element=
+              <PrivateRoute>
               <AdminRoutes />
-            //</PrivateRoute>
-          }
+            </PrivateRoute>
+          
         />
 
         {/* 404 Fallback */}

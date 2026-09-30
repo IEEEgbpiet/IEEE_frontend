@@ -33,7 +33,8 @@ export function DepartmentBarChart({ data }: { data: MetricDatum[] }) {
 }
 
 export function DonutChart({ data }: { data: MetricDatum[] }) {
-  const total = data.reduce((sum, item) => sum + item.value, 0) || 1;
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  const chartTotal = total || 1;
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
@@ -43,7 +44,7 @@ export function DonutChart({ data }: { data: MetricDatum[] }) {
       <svg viewBox="0 0 140 140" className="h-32 w-32">
         <circle cx="70" cy="70" r={radius} fill="none" stroke="#1f2937" strokeWidth="14" />
         {data.map((item) => {
-          const dash = (item.value / total) * circumference;
+          const dash = (item.value / chartTotal) * circumference;
           const nextOffset = offset - dash;
           const circle = (
             <circle

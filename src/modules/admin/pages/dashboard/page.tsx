@@ -8,22 +8,17 @@ import {
   Headset,
   Sparkles,
   BarChart3,
-  CheckCircle2,
-  Clock,
-  HelpCircle,
 } from "lucide-react";
 import {
-  ColumnChart,
   DepartmentBarChart,
   DonutChart,
-  LineChart,
 } from "./components/DashboardCharts";
 import { adminApi } from '@/services/adminApi';
 
 type DashboardSummary = {
   departmentCounts: Record<string, number>;
   upcomingEvents: Array<{ eventName: string; lastDate: string }>;
-  ticketStatus: Record<string, number>;
+  ticketStatus: { pending?: number; rejected?: number; solved?: number };
   certificateStatus: Record<string, number>;
 };
 
@@ -80,48 +75,16 @@ export default function DashboardPage() {
       (summary.upcomingEvents ?? []).map((event, index) => ({
         id: index + 1,
         title: event.eventName,
-        date: new Date(event.lastDate).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }),
-        regs: Math.max(40, 80 + index * 18),
+        date: event.lastDate
+          ? new Date(event.lastDate).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })
+          : 'Date unavailable',
       })),
     [summary.upcomingEvents],
   );
-
-  const supportTickets = useMemo(
-    () => [
-      {
-        id: 'TCK-801',
-        user: 'Rohan Verma',
-        subject: 'Certificate not received for Web Workshop',
-        status: summary.ticketStatus.pending ? 'Pending' : 'Open',
-      },
-      {
-        id: 'TCK-802',
-        user: 'Ananya Joshi',
-        subject: 'Team registration payment query',
-        status: 'Open',
-      },
-      {
-        id: 'TCK-803',
-        user: 'Vikram Das',
-        subject: 'Speaker session timing clarification',
-        status: 'Closed',
-      },
-    ],
-    [summary.ticketStatus.pending],
-  );
-
-  const certificateTrend = [
-    { label: 'Jan', value: 30 },
-    { label: 'Feb', value: 42 },
-    { label: 'Mar', value: 58 },
-    { label: 'Apr', value: 48 },
-    { label: 'May', value: 73 },
-    { label: 'Jun', value: 94 },
-  ];
 
   const certificateMix = [
     { label: 'Approved', value: Number(summary.certificateStatus.approved ?? 0), color: '#38bdf8' },
@@ -129,11 +92,10 @@ export default function DashboardPage() {
     { label: 'Rejected', value: Number(summary.certificateStatus.rejected ?? 0), color: '#f87171' },
   ];
 
-  const eventRegistrations = [
-    { label: 'W1', value: 74, color: '#60a5fa' },
-    { label: 'W2', value: 88, color: '#a78bfa' },
-    { label: 'W3', value: 96, color: '#34d399' },
-    { label: 'W4', value: 110, color: '#fbbf24' },
+  const supportStatus = [
+    { label: 'Pending', value: Number(summary.ticketStatus.pending ?? 0), color: '#fbbf24' },
+    { label: 'Rejected', value: Number(summary.ticketStatus.rejected ?? 0), color: '#f87171' },
+    { label: 'Solved', value: Number(summary.ticketStatus.solved ?? 0), color: '#34d399' },
   ];
 
   return (
@@ -189,7 +151,15 @@ export default function DashboardPage() {
 
             <div className="mt-5">
               {loading ? (
-                <div className="text-sm text-slate-400">Loading department metrics…</div>
+                <div className="space-y-4" role="status" aria-label="Loading department metrics">
+                  {[0, 1, 2, 3].map((item) => (
+                    <div key={item} className="animate-pulse space-y-2">
+                      <div className="h-3 w-1/3 rounded bg-white/10" />
+                      <div className="h-2.5 w-full rounded-full bg-white/10" />
+                    </div>
+                  ))}
+                  <span className="sr-only">Loading department metrics</span>
+                </div>
               ) : deptStats.length ? (
                 <DepartmentBarChart data={deptStats.map((dept) => ({ label: dept.name, value: dept.count, color: '#60a5fa' }))} />
               ) : (
@@ -228,13 +198,13 @@ export default function DashboardPage() {
             <div className="mt-5 grid grid-cols-2 gap-4">
               <div className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 text-center transition-all hover:border-blue-400/30 hover:bg-blue-950/20">
                 <p className="text-xs font-medium text-slate-400">Sent (Issued)</p>
-                <p className="mt-1 text-3xl font-bold text-white font-mono tracking-tight">148</p>
+                {loading ? <div className="mx-auto mt-2 h-9 w-16 animate-pulse rounded bg-white/10" /> : <p className="mt-1 text-3xl font-bold text-white font-mono tracking-tight">148</p>}
                 <span className="mt-1 inline-block text-[11px] text-emerald-400 font-medium">92.5% fulfilled</span>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 text-center transition-all hover:border-amber-400/30 hover:bg-amber-950/20">
                 <p className="text-xs font-medium text-slate-400">Requests</p>
-                <p className="mt-1 text-3xl font-bold text-amber-300 font-mono tracking-tight">12</p>
+                {loading ? <div className="mx-auto mt-2 h-9 w-16 animate-pulse rounded bg-white/10" /> : <p className="mt-1 text-3xl font-bold text-amber-300 font-mono tracking-tight">12</p>}
                 <span className="mt-1 inline-block text-[11px] text-amber-400 font-medium">Action required</span>
               </div>
             </div>
@@ -250,7 +220,13 @@ export default function DashboardPage() {
                 </span>
               </div>
               {loading ? (
-                <div className="text-sm text-slate-400">Loading certificate metrics…</div>
+                <div className="flex min-h-32 items-center gap-4 animate-pulse" role="status" aria-label="Loading certificate metrics">
+                  <div className="h-32 w-32 shrink-0 rounded-full border-[14px] border-white/10" />
+                  <div className="flex-1 space-y-3">
+                    {[0, 1, 2].map((item) => <div key={item} className="h-3 rounded bg-white/10" />)}
+                  </div>
+                  <span className="sr-only">Loading certificate metrics</span>
+                </div>
               ) : (
                 <DonutChart data={certificateMix.filter((item) => item.value > 0) || certificateMix} />
               )}
@@ -284,16 +260,25 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-5 rounded-xl border border-white/10 bg-admin-subtle/40 p-4">
-              <div className="mb-3 flex items-center justify-between text-xs text-slate-300">
-                <span className="font-medium">Monthly registration trend</span>
-                <span className="font-mono text-indigo-300">+41%</span>
-              </div>
-              {loading ? <div className="text-sm text-slate-400">Loading event trend…</div> : <LineChart data={certificateTrend} />}
-            </div>
-
             <div className="mt-5 space-y-2.5">
-              {upcomingEvents.map((evt) => (
+              {loading ? (
+                <div className="space-y-2.5" role="status" aria-label="Loading upcoming events">
+                  {[0, 1].map((item) => (
+                    <div key={item} className="flex animate-pulse items-center gap-3 rounded-xl border border-white/10 bg-admin-subtle/50 p-3.5">
+                      <div className="h-8 w-8 shrink-0 rounded-lg bg-white/10" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 w-3/5 rounded bg-white/10" />
+                        <div className="h-2.5 w-1/3 rounded bg-white/10" />
+                      </div>
+                    </div>
+                  ))}
+                  <span className="sr-only">Loading upcoming events</span>
+                </div>
+              ) : null}
+              {!loading && upcomingEvents.length === 0 ? (
+                <div className="text-sm text-slate-400">No upcoming events available.</div>
+              ) : null}
+              {!loading && upcomingEvents.map((evt) => (
                 <div
                   key={evt.id}
                   className="flex items-center justify-between rounded-xl border border-white/10 bg-admin-subtle/50 p-3.5 transition-all hover:border-indigo-400/30 hover:bg-indigo-950/20"
@@ -307,9 +292,6 @@ export default function DashboardPage() {
                       <p className="text-xs text-slate-400">{evt.date}</p>
                     </div>
                   </div>
-                  <span className="font-mono text-xs font-medium text-indigo-300 bg-indigo-950/40 border border-indigo-500/20 px-2.5 py-1 rounded-lg shrink-0 ml-3">
-                    {evt.regs} regs
-                  </span>
                 </div>
               ))}
             </div>
@@ -344,46 +326,22 @@ export default function DashboardPage() {
 
             <div className="mt-5 rounded-xl border border-white/10 bg-admin-subtle/40 p-4">
               <div className="mb-3 flex items-center justify-between text-xs text-slate-300">
-                <span className="font-medium">Registrations this cycle</span>
-                <span className="font-mono text-purple-300">{upcomingEvents.reduce((total, event) => total + event.regs, 0)}</span>
+                <span className="font-medium">Inquiries by status</span>
+                <span className="font-mono text-purple-300">
+                  {supportStatus.reduce((total, status) => total + status.value, 0)} total
+                </span>
               </div>
-              {loading ? <div className="text-sm text-slate-400">Loading event registrations…</div> : <ColumnChart data={eventRegistrations} />}
-            </div>
-
-            <div className="mt-5 space-y-2.5">
-              {supportTickets.map((tck) => (
-                <div
-                  key={tck.id}
-                  className="rounded-xl border border-white/10 bg-admin-subtle/50 p-3.5 transition-all hover:border-purple-400/30 hover:bg-purple-950/20"
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-xs text-purple-300 bg-purple-950/40 border border-purple-500/20 px-2 py-0.5 rounded">
-                      {tck.id}
-                    </span>
-
-                    {tck.status === "Pending" && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-950/40 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                        <Clock size={10} />
-                        Pending
-                      </span>
-                    )}
-                    {tck.status === "Open" && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-300 bg-blue-950/40 border border-blue-500/20 px-2 py-0.5 rounded-full">
-                        <HelpCircle size={10} />
-                        Open
-                      </span>
-                    )}
-                    {tck.status === "Closed" && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-300 bg-emerald-950/40 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                        <CheckCircle2 size={10} />
-                        Closed
-                      </span>
-                    )}
+              {loading ? (
+                <div className="flex min-h-32 items-center gap-4 animate-pulse" role="status" aria-label="Loading support summary">
+                  <div className="h-32 w-32 shrink-0 rounded-full border-[14px] border-white/10" />
+                  <div className="flex-1 space-y-3">
+                    {[0, 1, 2].map((item) => <div key={item} className="h-3 rounded bg-white/10" />)}
                   </div>
-                  <p className="truncate text-xs font-medium text-white">{tck.subject}</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">By {tck.user}</p>
+                  <span className="sr-only">Loading support summary</span>
                 </div>
-              ))}
+              ) : (
+                <DonutChart data={supportStatus} />
+              )}
             </div>
           </div>
         </div>

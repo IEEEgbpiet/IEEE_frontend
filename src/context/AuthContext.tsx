@@ -7,6 +7,7 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
+import { buildApiUrl } from '@/config/api';
 
 const STORAGE_KEY = 'ieee_admin_authenticated';
 
@@ -43,7 +44,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       throw new Error('Email and password are required.');
     }
 
-    const response = await fetch(`${(import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')}/api/v1/auth/login`, {
+    const response = await fetch(buildApiUrl('/api/v1/auth/login'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload),
