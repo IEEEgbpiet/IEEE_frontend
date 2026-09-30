@@ -31,10 +31,16 @@ async function requestJson<T>(endpoint: string, options: RequestInit = {}, skipA
   });
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch (e) {
+    console.error("API returned non-JSON response:", text);
+  }
 
   if (!response.ok) {
-    const message = payload?.message ?? payload?.msg ?? 'Request failed';
+    console.error(`API Error ${response.status}:`, text);
+    const message = payload?.message ?? payload?.msg ?? `Request failed (${response.status}: ${response.statusText})`;
     throw new Error(message);
   }
 
