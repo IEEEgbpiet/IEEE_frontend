@@ -22,6 +22,7 @@ async function requestJson<T>(endpoint: string, options: RequestInit = {}, skipA
     const token = getStoredToken();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
+      headers.set('auth-token', token);
     }
   }
 

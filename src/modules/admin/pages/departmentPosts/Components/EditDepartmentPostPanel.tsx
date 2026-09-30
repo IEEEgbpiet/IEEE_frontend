@@ -24,6 +24,7 @@ export default function EditDepartmentPostPanel() {
   const [formData, setFormData] = useState(initialData);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState("");
+  const [removeImage, setRemoveImage] = useState(false);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,6 +123,8 @@ export default function EditDepartmentPostPanel() {
 
       if (imageFile) {
         formDataToSend.append('image', imageFile);
+      } else if (removeImage) {
+        formDataToSend.append('removeImage', 'true');
       }
 
       await adminApi.updateDepartmentPost(id, formDataToSend);
@@ -259,8 +262,23 @@ export default function EditDepartmentPostPanel() {
                 {existingImageUrl && !imageFile && (
                     <div>
                         <label className="block text-xs font-medium text-slate-300 mb-1.5">Current Banner</label>
-                        <div className="rounded-xl overflow-hidden border border-white/10 h-40 bg-black/50">
+                        <div className="group relative rounded-xl overflow-hidden border border-white/10 h-40 bg-black/50">
                             <img src={existingImageUrl} alt="Current banner" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setExistingImageUrl("");
+                                        setRemoveImage(true);
+                                    }}
+                                    className="bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-2 transition-colors"
+                                >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Remove Image
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
