@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,50 +9,73 @@ import {
   Sparkles,
   AlignLeft,
   PlusCircle,
+  MapPin,
 } from "lucide-react";
 import { adminApi } from '@/services/adminApi';
 
 export default function AddUpcomingPost() {
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [regDate, setRegDate] = useState("");
-  const [overview, setOverview] = useState("");
-  const [imageName, setImageName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    venue: "",
+    date: "",
+    lastDate: "",
+    overview: "",
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !regDate) return;
+    if (!formData.title || !formData.date || !formData.venue || !formData.overview) {
+      setError("Please fill out all required fields.");
+      return;
+    }
+
+    if (formData.lastDate && new Date(formData.lastDate) > new Date(formData.date)) {
+      setError("Invalid dates: 'Last Date to Register' cannot be after the 'Event Date'. Registration must end before or on the event date.");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
       setError('');
-      const formData = new FormData();
-      formData.append('eventName', title);
-      formData.append('title', title);
-      formData.append('date', regDate);
-      formData.append('lastDate', regDate);
-      formData.append('overview', overview);
-      const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
-      if (fileInput?.files?.[0]) {
-        formData.append('image', fileInput.files[0]);
+
+      const formDataToSend = new FormData();
+      formDataToSend.append('eventName', formData.title);
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('date', formData.date);
+      formDataToSend.append('lastDate', formData.lastDate || formData.date);
+      formDataToSend.append('venue', formData.venue);
+      formDataToSend.append('overview', formData.overview);
+
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
       }
 
-      await adminApi.createUpcomingEvent(formData);
+      await adminApi.createUpcomingEvent(formDataToSend);
       navigate('/admin/upcoming-posts/manage');
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Unable to create upcoming event.');
+      const msg = submitError instanceof Error ? submitError.message : 'Unable to create upcoming event.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleReset = () => {
-    setTitle("");
-    setRegDate("");
-    setOverview("");
-    setImageName("");
+    setFormData({
+      title: "",
+      venue: "",
+      date: "",
+      lastDate: "",
+      overview: "",
+    });
+    setImageFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -97,10 +120,10 @@ export default function AddUpcomingPost() {
                 <UploadCloud size={24} />
               </div>
               <p className="mt-3 text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
-                {imageName ? (
+                {imageFile ? (
                   <span className="inline-flex items-center gap-1.5 text-blue-400 font-semibold">
                     <CheckCircle2 size={16} className="text-emerald-400" />
-                    {imageName}
+                    {imageFile.name}
                   </span>
                 ) : (
                   "Click to browse or drop event flyer image"
@@ -110,9 +133,14 @@ export default function AddUpcomingPost() {
                 PNG, JPG, or WEBP (Recommended 1200 x 630px)
               </p>
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={(e) => setImageName(e.target.files?.[0]?.name || "")}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setImageFile(e.target.files[0]);
+                  }
+                }}
                 className="hidden"
               />
             </label>
@@ -131,8 +159,8 @@ export default function AddUpcomingPost() {
                 <input
                   type="text"
                   required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g. IEEE Tech Symposium 2026"
                   className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
                 />
@@ -141,7 +169,7 @@ export default function AddUpcomingPost() {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-                Registration / Event Date
+                Event Date
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -150,8 +178,47 @@ export default function AddUpcomingPost() {
                 <input
                   type="date"
                   required
-                  value={regDate}
-                  onChange={(e) => setRegDate(e.target.value)}
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Grid: Venue and Last Registration Date */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                Event Venue / Location
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                  <MapPin size={16} />
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={formData.venue}
+                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                  placeholder="e.g. Computer Lab 3, GBPIET or Auditorium"
+                  className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                Last Date to Register
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                  <Calendar size={16} />
+                </div>
+                <input
+                  type="date"
+                  value={formData.lastDate}
+                  onChange={(e) => setFormData({ ...formData, lastDate: e.target.value })}
                   className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
@@ -170,8 +237,8 @@ export default function AddUpcomingPost() {
               <textarea
                 required
                 rows={5}
-                value={overview}
-                onChange={(e) => setOverview(e.target.value)}
+                value={formData.overview}
+                onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
                 placeholder="Provide a comprehensive summary of the upcoming event, topics, speaker info, and eligibility..."
                 className="w-full rounded-xl border border-white/15 bg-admin-subtle/70 pt-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
               />

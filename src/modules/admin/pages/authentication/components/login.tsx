@@ -6,7 +6,7 @@ export default function App() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -14,8 +14,8 @@ export default function App() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!username.trim() || !password.trim()) {
-      setError('Please enter both username and password.');
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password.');
       return;
     }
 
@@ -23,7 +23,7 @@ export default function App() {
     setError('');
 
     try {
-      await login(username, password);
+      await login(email, password);
       navigate('/admin');
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to sign in. Please try again.');
@@ -33,68 +33,89 @@ export default function App() {
   };
 
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center px-5 py-10">
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-5 py-10">
       {/* LOGIN CARD */}
-      <div className="w-full max-w-[420px] rounded-2xl border border-black/10 bg-white px-7 py-9 shadow-[0_12px_40px_rgba(0,0,0,0.08)] sm:px-10 sm:py-11">
+      <div className="w-full max-w-[440px] rounded-2xl border border-slate-200 bg-white px-7 py-9 shadow-[0_12px_40px_rgba(0,0,0,0.08)] sm:px-10 sm:py-11">
         {/* LOGO */}
-        <div className="flex justify-center mb-7">
+        <div className="flex justify-center mb-6">
           <img
             src="/images/IeeeLogo.webp"
             alt="IEEE GBPIET"
-            className="h-24 w-auto object-contain"
+            className="h-20 w-auto object-contain"
           />
         </div>
 
         {/* TITLE */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-black">IEEE GBPIET Portal</h1>
+        <div className="text-center mb-7">
+          <h1 className="text-2xl font-bold text-slate-900">IEEE GBPIET Portal</h1>
+          <p className="mt-1 text-xs text-slate-500">Sign in with your registered admin credentials</p>
         </div>
 
-        {/* FORM */}
+        {/* FORM ERROR ALERT */}
         {error ? (
-          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-            {error}
+          <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm text-red-700">
+            <svg
+              className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <div className="flex-1">
+              <p className="font-semibold">{error}</p>
+              {error.toLowerCase().includes('unauthorized') && (
+                <p className="mt-1 text-xs text-red-600">
+                  This email is not registered as an IEEE Admin on the server. Please verify your admin email and password.
+                </p>
+              )}
+            </div>
           </div>
         ) : null}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* USERNAME */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* EMAIL */}
           <div>
-            <label htmlFor="username" className="mb-2 block text-sm font-medium text-black">
-              Username
+            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-800">
+              Admin Email
             </label>
 
             <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
-              autoComplete="username"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@gbpiet.ac.in"
+              autoComplete="email"
               required
               className="
                 h-12
                 w-full
                 rounded-lg
                 border
-                border-black/20
+                border-slate-300
                 bg-white
                 px-4
                 text-sm
-                text-black
+                text-slate-900
                 outline-none
-                placeholder:text-black/40
+                placeholder:text-slate-400
                 transition
                 focus:border-[#00629B]
-                focus:ring-1
-                focus:ring-[#00629B]
+                focus:ring-2
+                focus:ring-[#00629B]/20
               "
             />
           </div>
 
           {/* PASSWORD */}
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium text-black">
+            <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-800">
               Password
             </label>
 
@@ -104,7 +125,7 @@ export default function App() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
+                placeholder="Enter your password"
                 autoComplete="current-password"
                 required
                 className="
@@ -112,18 +133,18 @@ export default function App() {
                   w-full
                   rounded-lg
                   border
-                  border-black/20
+                  border-slate-300
                   bg-white
                   px-4
                   pr-12
                   text-sm
-                  text-black
+                  text-slate-900
                   outline-none
-                  placeholder:text-black/40
+                  placeholder:text-slate-400
                   transition
                   focus:border-[#00629B]
-                  focus:ring-1
-                  focus:ring-[#00629B]
+                  focus:ring-2
+                  focus:ring-[#00629B]/20
                 "
               />
 
@@ -138,9 +159,9 @@ export default function App() {
                   top-1/2
                   -translate-y-1/2
                   p-1
-                  text-black
+                  text-slate-400
                   transition
-                  hover:text-brand-blue-dark
+                  hover:text-slate-700
                 "
               >
                 {showPassword ? (
@@ -190,7 +211,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* SIGN IN */}
+          {/* SIGN IN BUTTON */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -203,6 +224,7 @@ export default function App() {
               text-sm
               font-semibold
               text-white
+              shadow-sm
               transition-all
               duration-200
               hover:bg-[#004F7D]
@@ -215,10 +237,21 @@ export default function App() {
               disabled:opacity-70
             "
           >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Signing in...
+              </span>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
       </div>
     </main>
   );
 }
+
