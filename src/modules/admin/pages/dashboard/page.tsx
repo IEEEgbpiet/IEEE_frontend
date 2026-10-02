@@ -45,11 +45,29 @@ export default function DashboardPage() {
           adminApi.getDashboardCertificateSummary(),
         ]);
 
+        // Handle both { success: true, data: { ... } } and direct object returns
+        const extractObject = <T extends Record<string, unknown>>(res: unknown): T => {
+          if (res && typeof res === 'object') {
+            if ('data' in res && res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
+              return res.data as T;
+            }
+            return res as T;
+          }
+          return {} as T;
+        };
+
+        const certData = extractObject<Record<string, number>>(certificateResponse);
+        const deptData = extractObject<Record<string, number>>(departmentResponse);
+        const supportData = extractObject<{ pending?: number; rejected?: number; solved?: number }>(supportResponse);
+        const eventData = (eventsResponse && typeof eventsResponse === 'object' && 'data' in eventsResponse && Array.isArray(eventsResponse.data))
+          ? eventsResponse.data
+          : (Array.isArray(eventsResponse) ? eventsResponse : []);
+
         setSummary({
-          departmentCounts: departmentResponse?.data ?? {},
-          upcomingEvents: eventsResponse?.data ?? [],
-          ticketStatus: supportResponse?.data ?? {},
-          certificateStatus: certificateResponse?.data ?? {},
+          departmentCounts: deptData,
+          upcomingEvents: eventData,
+          ticketStatus: supportData,
+          certificateStatus: certData,
         });
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Unable to load dashboard data.');
@@ -86,10 +104,16 @@ export default function DashboardPage() {
     [summary.upcomingEvents],
   );
 
+  const certApproved = Number(summary.certificateStatus.approved ?? 0);
+  const certPending = Number(summary.certificateStatus.pending ?? 0);
+  const certRejected = Number(summary.certificateStatus.rejected ?? 0);
+  const certTotal = certApproved + certPending + certRejected;
+  const certFulfillmentPct = certTotal > 0 ? ((certApproved / certTotal) * 100).toFixed(1) : '0';
+
   const certificateMix = [
-    { label: 'Approved', value: Number(summary.certificateStatus.approved ?? 0), color: '#38bdf8' },
-    { label: 'Pending', value: Number(summary.certificateStatus.pending ?? 0), color: '#fbbf24' },
-    { label: 'Rejected', value: Number(summary.certificateStatus.rejected ?? 0), color: '#f87171' },
+    { label: 'Approved', value: certApproved, color: '#38bdf8' },
+    { label: 'Pending', value: certPending, color: '#fbbf24' },
+    { label: 'Rejected', value: certRejected, color: '#f87171' },
   ];
 
   const supportStatus = [
@@ -195,17 +219,53 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 text-center transition-all hover:border-blue-400/30 hover:bg-blue-950/20">
+            <div className="mt-5 grid grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="rounded-xl border border-white/10 bg-admin-subtle/60 p-3 sm:p-4 text-center transition-all hover:border-blue-400/30 hover:bg-blue-950/20">
                 <p className="text-xs font-medium text-slate-400">Sent (Issued)</p>
-                {loading ? <div className="mx-auto mt-2 h-9 w-16 animate-pulse rounded bg-white/10" /> : <p className="mt-1 text-3xl font-bold text-white font-mono tracking-tight">148</p>}
-                <span className="mt-1 inline-block text-[11px] text-emerald-400 font-medium">92.5% fulfilled</span>
+                {loading ? (
+                  <div className="mx-auto mt-2 h-8 w-12 animate-pulse rounded bg-white/10" />
+                ) : (
+                  <p className="mt-1 text-2xl sm:text-3xl font-bold text-white font-mono tracking-tight">
+                    {certApproved}
+                  </p>
+                )}
+                {!loading && (
+                  <span className="mt-1 inline-block text-[11px] text-emerald-400 font-medium">
+                    {certFulfillmentPct}% fulfilled
+                  </span>
+                )}
               </div>
 
-              <div className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 text-center transition-all hover:border-amber-400/30 hover:bg-amber-950/20">
+              <div className="rounded-xl border border-white/10 bg-admin-subtle/60 p-3 sm:p-4 text-center transition-all hover:border-amber-400/30 hover:bg-amber-950/20">
                 <p className="text-xs font-medium text-slate-400">Requests</p>
-                {loading ? <div className="mx-auto mt-2 h-9 w-16 animate-pulse rounded bg-white/10" /> : <p className="mt-1 text-3xl font-bold text-amber-300 font-mono tracking-tight">12</p>}
-                <span className="mt-1 inline-block text-[11px] text-amber-400 font-medium">Action required</span>
+                {loading ? (
+                  <div className="mx-auto mt-2 h-8 w-12 animate-pulse rounded bg-white/10" />
+                ) : (
+                  <p className="mt-1 text-2xl sm:text-3xl font-bold text-amber-300 font-mono tracking-tight">
+                    {certPending}
+                  </p>
+                )}
+                {!loading && (
+                  <span className="mt-1 inline-block text-[11px] text-amber-400 font-medium">
+                    {certPending > 0 ? "Action required" : "All reviewed"}
+                  </span>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-admin-subtle/60 p-3 sm:p-4 text-center transition-all hover:border-rose-400/30 hover:bg-rose-950/20">
+                <p className="text-xs font-medium text-slate-400">Rejected</p>
+                {loading ? (
+                  <div className="mx-auto mt-2 h-8 w-12 animate-pulse rounded bg-white/10" />
+                ) : (
+                  <p className="mt-1 text-2xl sm:text-3xl font-bold text-rose-400 font-mono tracking-tight">
+                    {certRejected}
+                  </p>
+                )}
+                {!loading && (
+                  <span className="mt-1 inline-block text-[11px] text-rose-400/80 font-medium">
+                    {certRejected > 0 ? "Declined" : "0 declined"}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -216,7 +276,7 @@ export default function DashboardPage() {
                   Distribution Ratio
                 </span>
                 <span className="font-mono text-xs text-cyan-300">
-                  {(summary.certificateStatus.approved ?? 0)} / {(Number(summary.certificateStatus.approved ?? 0) + Number(summary.certificateStatus.pending ?? 0) + Number(summary.certificateStatus.rejected ?? 0)) || 1} Total
+                  {certApproved} / {certTotal || 1} Total
                 </span>
               </div>
               {loading ? (
@@ -228,7 +288,7 @@ export default function DashboardPage() {
                   <span className="sr-only">Loading certificate metrics</span>
                 </div>
               ) : (
-                <DonutChart data={certificateMix.filter((item) => item.value > 0) || certificateMix} />
+                <DonutChart data={certificateMix} />
               )}
             </div>
           </div>

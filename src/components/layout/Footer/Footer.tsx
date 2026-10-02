@@ -17,9 +17,10 @@ export default function Footer() {
         { name: 'Robotics', href: '/activities/robotics' },
       ],
     },
-     { name: 'Login', href: '/login' },
+    { name: 'Certificate', href: '/certificate' },
     { name: 'Teams', href: '/teams' },
     { name: 'Contact', href: '/contact' },
+    { name: 'Login', href: '/login' },
   ];
 
   return (

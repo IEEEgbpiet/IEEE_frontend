@@ -2,49 +2,51 @@ import { API_BASE_URL, buildApiUrl } from '@/config/api';
 
 export { API_BASE_URL, buildApiUrl };
 
-const getStoredToken = () => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
+// ==========================================
+// Cookie Auth Helpers
+// ==========================================
 
-  return window.localStorage.getItem('ieee_admin_token') ?? '';
+export const COOKIE_TOKEN_KEY = 'Token';
+
+export const getCookie = (name: string): string => {
+  if (typeof document === 'undefined') return '';
+  const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+  return match ? decodeURIComponent(match[3]) : '';
 };
 
-const LOCAL_EVENTS_KEY = 'ieee_local_upcoming_events';
-
-const getLocalUpcomingEvents = (): Array<Record<string, unknown>> => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem(LOCAL_EVENTS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+export const setCookie = (name: string, value: string, days = 7) => {
+  if (typeof document === 'undefined') return;
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
 };
 
-const saveLocalUpcomingEvent = (event: Record<string, unknown>) => {
-  if (typeof window === 'undefined') return;
-  try {
-    const current = getLocalUpcomingEvents();
-    const updated = [event, ...current.filter((e) => (e.postId || e._id || e.id) !== (event.postId || event._id || event.id))];
-    window.localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(updated));
-  } catch {
-    // ignore
-  }
+export const deleteCookie = (name: string) => {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${name}=; Max-Age=0; path=/; SameSite=Lax`;
 };
 
-const removeLocalUpcomingEvent = (id: string) => {
-  if (typeof window === 'undefined') return;
-  try {
-    const current = getLocalUpcomingEvents();
-    const updated = current.filter((e) => (e.postId !== id && e._id !== id && e.id !== id));
-    window.localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(updated));
-  } catch {
-    // ignore
-  }
+export const getStoredToken = (): string => {
+  if (typeof document === 'undefined') return '';
+  // Check cookie (Token per backend Set-Cookie or lowercase token)
+  const token = getCookie(COOKIE_TOKEN_KEY) || getCookie('token');
+  return token ? token.trim() : '';
 };
 
-async function requestJson<T>(endpoint: string, options: RequestInit = {}, skipAuth = false): Promise<T> {
+export const storeTokenCookie = (token: string) => {
+  setCookie(COOKIE_TOKEN_KEY, token, 7);
+  setCookie('token', token, 7);
+};
+
+export const removeTokenCookie = () => {
+  deleteCookie(COOKIE_TOKEN_KEY);
+  deleteCookie('token');
+};
+
+// ==========================================
+// Base Request Handler
+// ==========================================
+
+export async function requestJson<T>(endpoint: string, options: RequestInit = {}, skipAuth = false): Promise<T> {
   const headers = new Headers(options.headers ?? {});
   const hasBody = typeof options.body !== 'undefined';
 
@@ -56,8 +58,8 @@ async function requestJson<T>(endpoint: string, options: RequestInit = {}, skipA
     const token = getStoredToken();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
-      headers.set('auth-token', token);
       headers.set('x-access-token', token);
+      headers.set('auth-token', token);
     }
   }
 
@@ -67,28 +69,127 @@ async function requestJson<T>(endpoint: string, options: RequestInit = {}, skipA
   });
 
   const text = await response.text();
-  let payload = null;
+  let payload: Record<string, unknown> | null = null;
   try {
     payload = text ? JSON.parse(text) : null;
-  } catch (e) {
+  } catch {
     console.error("API returned non-JSON response:", text);
   }
 
   if (!response.ok) {
     console.error(`API Error ${response.status}:`, text);
-    const serverMessage = payload?.message ?? payload?.msg ?? `Request failed (${response.status}: ${response.statusText})`;
-    const details = payload?.error
-      ? ` [Error: ${typeof payload.error === 'string' ? payload.error : JSON.stringify(payload.error)}]`
-      : (payload?.errors ? ` [Errors: ${JSON.stringify(payload.errors)}]` : '');
-    throw new Error(`[HTTP ${response.status}] ${serverMessage}${details}`);
+    const message =
+      (payload?.message as string | undefined) ??
+      (payload?.msg as string | undefined) ??
+      `Request failed (${response.status}: ${response.statusText})`;
+    throw new Error(message);
   }
 
-  return payload as T;
+  return payload as unknown as T;
 }
 
+// ==========================================
+// TypeScript Interfaces (per Apis.pdf)
+// ==========================================
+
+export interface UpcomingEventImage {
+  url: string;
+  publicId?: string;
+}
+
+export interface UpcomingEvent {
+  [key: string]: unknown;
+  _id?: string;
+  id?: string;
+  postId: string;
+  eventName: string;
+  title: string;
+  date: string;
+  lastDate: string;
+  venue?: string;
+  overview: string;
+  image?: UpcomingEventImage | string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpcomingEventsResponse {
+  success: boolean;
+  count?: number;
+  posts: UpcomingEvent[];
+}
+
+export interface DepartmentPostImage {
+  url: string;
+  publicId?: string;
+}
+
+export interface DepartmentPost {
+  [key: string]: unknown;
+  _id?: string;
+  id?: string;
+  postId?: string;
+  title: string;
+  category: string;
+  branch: string;
+  date: string;
+  time?: string;
+  venue: string;
+  organizedBy: string;
+  reportAuthor?: string;
+  overview: string;
+  description: string;
+  keyDiscussion?: string[] | string;
+  studentsPresent?: string[] | string;
+  image?: DepartmentPostImage | string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CertificateApplication {
+  [key: string]: unknown;
+  _id?: string;
+  certificateId?: string;
+  name: string;
+  email: string;
+  branch: string;
+  eventName: string;
+  event?: string;
+  date: string;
+  position?: string; // "1st" | "2nd" | "3rd" or undefined
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SupportTicket {
+  [key: string]: unknown;
+  _id: string;
+  ticketId: string;
+  name: string;
+  email: string;
+  subject: string;
+  description?: string;
+  message?: string;
+  solvedStatus: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ==========================================
+// Admin API Methods
+// ==========================================
+
 export const adminApi = {
+  // 1. Auth & OTP
   login: async ({ email, password }: { email: string; password: string }) =>
-    requestJson<{ success: boolean; msg?: string; message?: string; token?: string; user?: { id: string; email: string } }>(
+    requestJson<{
+      success: boolean;
+      msg?: string;
+      message?: string;
+      token?: string;
+      user?: { id: string; email: string };
+    }>(
       '/api/v1/auth/login',
       {
         method: 'POST',
@@ -98,179 +199,210 @@ export const adminApi = {
     ),
 
   logout: async () =>
-    requestJson<{ success: boolean; message?: string }>('/api/v1/auth/logout', {
-      method: 'POST',
-    }, true),
+    requestJson<{ success: boolean; message?: string }>(
+      '/api/v1/auth/logout',
+      {
+        method: 'POST',
+      },
+      true,
+    ),
 
+  // 2. Dashboard Analytics
   getDashboardDepartmentCounts: () =>
-    requestJson<{ success: boolean; data: Record<string, number> }>('/api/v1/dashboard/departmentposts/getall'),
+    requestJson<{ success: boolean; data: Record<string, number> }>(
+      '/api/v1/dashboard/departmentposts/getall',
+    ),
 
   getDashboardEvents: () =>
-    requestJson<{ success: boolean; data: Array<{ eventName: string; lastDate: string }> }>('/api/v1/dashboard/events/getall'),
+    requestJson<{ success: boolean; data: Array<{ eventName: string; lastDate: string }> }>(
+      '/api/v1/dashboard/events/getall',
+    ),
 
   getDashboardSupportSummary: () =>
-    requestJson<{ success: boolean; data: Record<string, number> }>('/api/v1/dashboard/contactus/getall'),
+    requestJson<{ success: boolean; data: Record<string, number> }>(
+      '/api/v1/dashboard/contactus/getall',
+    ),
 
   getDashboardCertificateSummary: () =>
-    requestJson<{ success: boolean; data: Record<string, number> }>('/api/v1/dashboard/certificates/getall'),
+    requestJson<{ success: boolean; data: Record<string, number> }>(
+      '/api/v1/dashboard/certificates/getall',
+    ),
 
+  // 3. Certificates
   getCertificateApplications: () =>
-    requestJson<{ success: boolean; count?: number; data?: Array<Record<string, unknown>> }>('/api/v1/certificate/all'),
+    requestJson<{ success: boolean; count?: number; data?: CertificateApplication[] }>(
+      '/api/v1/certificate/all',
+    ),
 
   approveCertificate: (id: string) =>
-    requestJson<{ success: boolean; message: string; data?: Record<string, unknown>; email?: { messageId?: string } }>(
-      `/api/v1/certificate/approved/${id}`,
+    requestJson<{
+      success: boolean;
+      message: string;
+      data?: Partial<CertificateApplication>;
+      email?: { messageId?: string };
+    }>(`/api/v1/certificate/approved/${id}`, { method: 'PATCH' }),
+
+  rejectCertificate: (id: string) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      data?: Partial<CertificateApplication>;
+    }>(`/api/v1/certificate/rejected/${id}`, { method: 'PATCH' }),
+
+  createManualCertificate: (payload: {
+    name: string;
+    email: string;
+    branch: string;
+    event: string;
+    date: string;
+    position?: string;
+  }) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      data?: CertificateApplication;
+      email?: { messageId?: string };
+    }>('/api/v1/certificate/adminApply', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  /** Public endpoint — student self-applies for a certificate */
+  applyCertificate: (payload: {
+    name: string;
+    email: string;
+    branch: string;
+    event: string;
+    date: string;
+    position?: string;
+  }) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      data?: CertificateApplication;
+    }>(
+      '/api/v1/certificate/applynow',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true, // public — no auth
+    ),
+
+  // 4. Support Tickets
+  getSupportTickets: () =>
+    requestJson<{ success: boolean; count?: number; tickets?: SupportTicket[] }>(
+      '/api/v1/support/allticket',
+    ),
+
+  viewSupportTicket: (id: string) =>
+    requestJson<{ success: boolean; ticket?: SupportTicket }>(
+      `/api/v1/support/viewTicket/${id}`,
+    ),
+
+  closeSupportTicket: (id: string) =>
+    requestJson<{ success: boolean; message: string; ticket?: Partial<SupportTicket> }>(
+      `/api/v1/support/closeTicket/${id}`,
       { method: 'PATCH' },
     ),
 
-  rejectCertificate: (id: string) =>
-    requestJson<{ success: boolean; message: string; data?: Record<string, unknown> }>(`/api/v1/certificate/rejected/${id}`, {
-      method: 'PATCH',
-    }),
+  rejectSupportTicket: (id: string) =>
+    requestJson<{ success: boolean; message: string; ticket?: Partial<SupportTicket> }>(
+      `/api/v1/support/Reject/${id}`,
+      { method: 'PATCH' },
+    ),
 
-  createManualCertificate: (payload: Record<string, unknown>) =>
-    requestJson<{ success: boolean; message: string; data?: Record<string, unknown>; email?: { messageId?: string } }>(
-      '/api/v1/certificate/adminApply',
+  /** Public endpoint — submit a support inquiry */
+  sendSupportMessage: (payload: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      ticket?: SupportTicket;
+    }>(
+      '/api/v1/support/sendmsg',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true, // public — no auth
+    ),
+
+  // 5. Upcoming Events Module (Direct MongoDB Integration per Apis.pdf)
+  getUpcomingEvents: () =>
+    requestJson<UpcomingEventsResponse>('/api/v1/upcomingevents/all', {}, true),
+
+  getUpcomingEventById: (id: string) =>
+    requestJson<{ success: boolean; post?: UpcomingEvent }>(
+      `/api/v1/upcomingevents/post/${id}`,
+      {},
+      true,
+    ),
+
+  createUpcomingEvent: (formData: FormData) =>
+    requestJson<{ success: boolean; message: string; post?: UpcomingEvent }>(
+      '/api/v1/upcomingevents/create',
       {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: formData,
       },
     ),
 
-  getSupportTickets: () =>
-    requestJson<{ success: boolean; count?: number; tickets?: Array<Record<string, unknown>> }>('/api/v1/support/allticket'),
-
-  closeSupportTicket: (id: string) =>
-    requestJson<{ success: boolean; message: string; ticket?: Record<string, unknown> }>(`/api/v1/support/closeTicket/${id}`, {
-      method: 'PATCH',
-    }),
-
-  rejectSupportTicket: (id: string) =>
-    requestJson<{ success: boolean; message: string; ticket?: Record<string, unknown> }>(`/api/v1/support/Reject/${id}`, {
-      method: 'PATCH',
-    }),
-
-  getUpcomingEvents: async () => {
-    const local = getLocalUpcomingEvents();
-    try {
-      const res = await requestJson<{ success: boolean; count?: number; posts?: Array<Record<string, unknown>> }>('/api/v1/upcomingevents/all');
-      const backendPosts = res.posts || [];
-      const combined = [...local, ...backendPosts.filter(bp => !local.some(lp => (lp.postId || lp._id || lp.id) === (bp.postId || bp._id || bp.id)))];
-      return { success: true, count: combined.length, posts: combined };
-    } catch {
-      return { success: true, count: local.length, posts: local };
-    }
-  },
-
-  getUpcomingEventById: async (id: string) => {
-    try {
-      return await requestJson<{ success: boolean; post?: Record<string, unknown> }>(`/api/v1/upcomingevents/post/${id}`);
-    } catch {
-      const local = getLocalUpcomingEvents();
-      const found = local.find((e) => (e.postId === id || e._id === id || e.id === id));
-      if (found) {
-        return { success: true, post: found };
-      }
-      throw new Error("Event not found");
-    }
-  },
-
-  createUpcomingEvent: async (formData: FormData) => {
-    try {
-      const res = await requestJson<{ success: boolean; message: string; post?: Record<string, unknown> }>('/api/v1/upcomingevents/create', {
-        method: 'POST',
-        body: formData,
-      });
-      if (res.post) {
-        saveLocalUpcomingEvent(res.post);
-      }
-      return res;
-    } catch (err) {
-      console.warn("Backend createUpcomingEvent returned error, falling back to local persistence:", err);
-      const title = (formData.get('title') || formData.get('eventName') || 'Upcoming Event') as string;
-      const eventName = (formData.get('eventName') || title) as string;
-      const date = (formData.get('date') || new Date().toISOString().split('T')[0]) as string;
-      const lastDate = (formData.get('lastDate') || date) as string;
-      const venue = (formData.get('venue') || 'GBPIET Campus') as string;
-      const overview = (formData.get('overview') || '') as string;
-      const id = `EVT-${Math.floor(10000 + Math.random() * 90000)}`;
-
-      const newEvent: Record<string, unknown> = {
-        _id: id,
-        id,
-        postId: id,
-        eventName,
-        title,
-        date,
-        lastDate,
-        venue,
-        overview,
-        createdAt: new Date().toISOString(),
-      };
-      saveLocalUpcomingEvent(newEvent);
-      return { success: true, message: "Event created successfully", post: newEvent };
-    }
-  },
-
-  updateUpcomingEvent: async (id: string, formData: FormData | Record<string, unknown>) => {
-    try {
-      const res = await requestJson<{ success: boolean; message: string; post?: Record<string, unknown> }>(`/api/v1/upcomingevents/edit/${id}`, {
+  updateUpcomingEvent: (id: string, formData: FormData | Record<string, unknown>) =>
+    requestJson<{ success: boolean; message: string; post?: Partial<UpcomingEvent> }>(
+      `/api/v1/upcomingevents/edit/${id}`,
+      {
         method: 'PATCH',
         body: formData instanceof FormData ? formData : JSON.stringify(formData),
-      });
-      if (res.post) {
-        saveLocalUpcomingEvent(res.post);
-      }
-      return res;
-    } catch {
-      const local = getLocalUpcomingEvents();
-      const existing = local.find((e) => (e.postId === id || e._id === id || e.id === id)) || {};
-      const updatedEvent: Record<string, unknown> = { ...existing };
-      if (formData instanceof FormData) {
-        for (const [key, val] of formData.entries()) {
-          if (typeof val === 'string') updatedEvent[key] = val;
-        }
-      } else {
-        Object.assign(updatedEvent, formData);
-      }
-      saveLocalUpcomingEvent(updatedEvent);
-      return { success: true, message: "Event updated successfully", post: updatedEvent };
-    }
-  },
+      },
+    ),
 
-  deleteUpcomingEvent: async (id: string) => {
-    removeLocalUpcomingEvent(id);
-    try {
-      return await requestJson<{ success: boolean; message: string }>(`/api/v1/upcomingevents/delete/${id}`, {
+  deleteUpcomingEvent: (id: string) =>
+    requestJson<{ success: boolean; message: string }>(
+      `/api/v1/upcomingevents/delete/${id}`,
+      {
         method: 'DELETE',
-      });
-    } catch {
-      return { success: true, message: "Event deleted successfully" };
-    }
-  },
+      },
+    ),
 
+  // 6. Department Posts
   getDepartmentPosts: (dep?: string) => {
     const query = dep ? `?dep=${encodeURIComponent(dep)}` : '';
-    return requestJson<{ success: boolean; count?: number; posts?: Array<Record<string, unknown>> }>(`/api/v1/department/all${query}`);
+    return requestJson<{
+      success: boolean;
+      count?: number;
+      posts?: DepartmentPost[];
+    }>(`/api/v1/department/all${query}`, {}, true);
   },
 
   getDepartmentPostById: (id: string) =>
-    requestJson<{ success: boolean; post?: Record<string, unknown> }>(`/api/v1/department/post/${id}`),
+    requestJson<{ success: boolean; post?: DepartmentPost }>(
+      `/api/v1/department/post/${id}`,
+      {},
+      true,
+    ),
 
   createDepartmentPost: (formData: FormData) =>
-    requestJson<{ success: boolean; message: string; post?: Record<string, unknown> }>('/api/v1/department/create', {
-      method: 'POST',
-      body: formData,
-    }),
+    requestJson<{ success: boolean; message: string; post?: DepartmentPost }>(
+      '/api/v1/department/create',
+      {
+        method: 'POST',
+        body: formData,
+      },
+    ),
 
   updateDepartmentPost: (id: string, formData: FormData | Record<string, unknown>) =>
-    requestJson<{ success: boolean; message: string; post?: Record<string, unknown> }>(`/api/v1/department/edit/${id}`, {
-      method: 'PATCH',
-      body: formData instanceof FormData ? formData : JSON.stringify(formData),
-    }),
+    requestJson<{ success: boolean; message: string; post?: DepartmentPost }>(
+      `/api/v1/department/edit/${id}`,
+      {
+        method: 'PATCH',
+        body: formData instanceof FormData ? formData : JSON.stringify(formData),
+      },
+    ),
 
   deleteDepartmentPost: (id: string) =>
     requestJson<{ success: boolean; message: string }>(`/api/v1/department/delete/${id}`, {
       method: 'DELETE',
     }),
 };
+
+export const api = adminApi;
+export default adminApi;

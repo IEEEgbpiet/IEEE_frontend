@@ -9,7 +9,7 @@ import {
   Sparkles,
   AlignLeft,
   PlusCircle,
-  MapPin,
+  Tag,
 } from "lucide-react";
 import { adminApi } from '@/services/adminApi';
 
@@ -18,8 +18,8 @@ export default function AddUpcomingPost() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
+    eventName: "",
     title: "",
-    venue: "",
     date: "",
     lastDate: "",
     overview: "",
@@ -27,15 +27,20 @@ export default function AddUpcomingPost() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.date || !formData.venue || !formData.overview) {
-      setError("Please fill out all required fields.");
+    const eventNameVal = formData.eventName.trim();
+    const titleVal = formData.title.trim();
+    const overviewVal = formData.overview.trim();
+
+    if (!eventNameVal || !titleVal || !formData.date || !formData.lastDate || !overviewVal) {
+      setError("Please fill out all required fields: Event Name, Title, Event Date, Last Date, and Overview.");
       return;
     }
 
-    if (formData.lastDate && new Date(formData.lastDate) > new Date(formData.date)) {
+    if (new Date(formData.lastDate) > new Date(formData.date)) {
       setError("Invalid dates: 'Last Date to Register' cannot be after the 'Event Date'. Registration must end before or on the event date.");
       return;
     }
@@ -43,21 +48,34 @@ export default function AddUpcomingPost() {
     try {
       setIsSubmitting(true);
       setError('');
+      setSuccessMsg('');
 
+      // Build payload with ONLY the schema fields: eventName, title, date, lastDate, overview, image
       const formDataToSend = new FormData();
-      formDataToSend.append('eventName', formData.title);
-      formDataToSend.append('title', formData.title);
+      formDataToSend.append('eventName', eventNameVal);
+      formDataToSend.append('title', titleVal);
       formDataToSend.append('date', formData.date);
-      formDataToSend.append('lastDate', formData.lastDate || formData.date);
-      formDataToSend.append('venue', formData.venue);
-      formDataToSend.append('overview', formData.overview);
+      formDataToSend.append('lastDate', formData.lastDate);
+      formDataToSend.append('overview', overviewVal);
 
       if (imageFile) {
+        if (imageFile.size > 5 * 1024 * 1024) {
+          setError("File size exceeds the 5MB limit.");
+          setIsSubmitting(false);
+          return;
+        }
         formDataToSend.append('image', imageFile);
       }
 
-      await adminApi.createUpcomingEvent(formDataToSend);
-      navigate('/admin/upcoming-posts/manage');
+      const res = await adminApi.createUpcomingEvent(formDataToSend);
+      if (res.success) {
+        setSuccessMsg(res.message || "Event created and published in MongoDB successfully!");
+        setTimeout(() => {
+          navigate('/admin/upcoming-posts/manage');
+        }, 1200);
+      } else {
+        throw new Error(res.message || "Failed to create upcoming event.");
+      }
     } catch (submitError) {
       const msg = submitError instanceof Error ? submitError.message : 'Unable to create upcoming event.';
       setError(msg);
@@ -68,13 +86,15 @@ export default function AddUpcomingPost() {
 
   const handleReset = () => {
     setFormData({
+      eventName: "",
       title: "",
-      venue: "",
       date: "",
       lastDate: "",
       overview: "",
     });
     setImageFile(null);
+    setError('');
+    setSuccessMsg('');
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -96,24 +116,36 @@ export default function AddUpcomingPost() {
               <Sparkles size={16} className="text-blue-400" />
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              Enter the event announcement details to schedule a new post.
+              Enter the event announcement details to publish a new post directly to MongoDB.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Styled Form Card */}
-      {error ? <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
+      {/* Error & Success Alerts */}
+      {error ? (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-sm text-red-200">
+          {error}
+        </div>
+      ) : null}
 
+      {successMsg ? (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-sm text-emerald-200 flex items-center gap-2">
+          <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+          <span>{successMsg}</span>
+        </div>
+      ) : null}
+
+      {/* Form Card */}
       <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface p-6 sm:p-8 shadow-2xl">
         {/* Accent top highlight */}
         <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/70 to-transparent" />
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Visual Image Upload Dropzone */}
+          {/* 1. Event Poster / Flyer (image.url / image.publicId) */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-              Event Flyer / Poster
+              Event Banner Image (Optional, Max 5MB)
             </label>
             <label className="group flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/15 bg-admin-subtle/40 p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-400/60 hover:bg-blue-950/20">
               <div className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-400 transition-transform duration-300 group-hover:scale-110 group-hover:bg-blue-500/20">
@@ -123,19 +155,19 @@ export default function AddUpcomingPost() {
                 {imageFile ? (
                   <span className="inline-flex items-center gap-1.5 text-blue-400 font-semibold">
                     <CheckCircle2 size={16} className="text-emerald-400" />
-                    {imageFile.name}
+                    {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)} MB)
                   </span>
                 ) : (
-                  "Click to browse or drop event flyer image"
+                  "Click to browse or drop event banner image"
                 )}
               </p>
               <p className="mt-1 text-xs text-slate-400">
-                PNG, JPG, or WEBP (Recommended 1200 x 630px)
+                PNG, JPG, JPEG, or WEBP (Max 5MB)
               </p>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
                 onChange={(e) => {
                   if (e.target.files && e.target.files.length > 0) {
                     setImageFile(e.target.files[0]);
@@ -146,11 +178,30 @@ export default function AddUpcomingPost() {
             </label>
           </div>
 
-          {/* Grid: Title and Date */}
+          {/* 2. Grid: eventName and title */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-                Event Title
+                Event Name <span className="text-blue-400">*</span>
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                  <Tag size={16} />
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={formData.eventName}
+                  onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
+                  placeholder="e.g. Robotics & Embedded Systems Bootcamp"
+                  className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                Title / Headline <span className="text-blue-400">*</span>
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -161,15 +212,18 @@ export default function AddUpcomingPost() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. IEEE Tech Symposium 2026"
+                  placeholder="e.g. Learn Arduino, ESP32, and ROS2"
                   className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
+          </div>
 
+          {/* 3. Grid: date and lastDate */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-                Event Date
+                Event Date <span className="text-blue-400">*</span>
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -184,32 +238,10 @@ export default function AddUpcomingPost() {
                 />
               </div>
             </div>
-          </div>
-
-          {/* Grid: Venue and Last Registration Date */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-                Event Venue / Location
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                  <MapPin size={16} />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={formData.venue}
-                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                  placeholder="e.g. Computer Lab 3, GBPIET or Auditorium"
-                  className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
-            </div>
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-                Last Date to Register
+                Last Date to Register <span className="text-blue-400">*</span>
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -217,6 +249,7 @@ export default function AddUpcomingPost() {
                 </div>
                 <input
                   type="date"
+                  required
                   value={formData.lastDate}
                   onChange={(e) => setFormData({ ...formData, lastDate: e.target.value })}
                   className="w-full h-11 rounded-xl border border-white/15 bg-admin-subtle/70 pl-10 pr-4 text-sm text-white outline-none transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
@@ -225,10 +258,10 @@ export default function AddUpcomingPost() {
             </div>
           </div>
 
-          {/* Overview */}
+          {/* 4. overview */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-              Event Overview & Details
+              Event Overview <span className="text-blue-400">*</span>
             </label>
             <div className="relative">
               <div className="pointer-events-none absolute top-3 left-3.5 text-slate-400">
@@ -239,13 +272,13 @@ export default function AddUpcomingPost() {
                 rows={5}
                 value={formData.overview}
                 onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
-                placeholder="Provide a comprehensive summary of the upcoming event, topics, speaker info, and eligibility..."
+                placeholder="Provide a comprehensive overview of the event, workshop details, and agenda..."
                 className="w-full rounded-xl border border-white/15 bg-admin-subtle/70 pt-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition-all duration-200 focus:border-blue-400 focus:bg-admin-card focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
-          {/* Buttons */}
+          {/* Submit & Reset Buttons */}
           <div className="pt-2 flex items-center gap-3">
             <button
               type="submit"
@@ -253,7 +286,7 @@ export default function AddUpcomingPost() {
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(43,123,255,0.3)] hover:shadow-[0_4px_24px_rgba(43,123,255,0.45)] hover:from-blue-500 hover:to-blue-600 active:scale-[0.98] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70"
             >
               <PlusCircle size={16} />
-              <span>{isSubmitting ? 'Publishing...' : 'Publish Event Post'}</span>
+              <span>{isSubmitting ? 'Publishing to MongoDB...' : 'Publish Event Post'}</span>
             </button>
 
             <button

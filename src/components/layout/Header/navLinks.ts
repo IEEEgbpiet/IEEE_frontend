@@ -45,8 +45,8 @@ export const navLinks: NavItem[] = [
     href: '/teams',
   },
   {
-    name: 'Events',
-    href: '/activities/events',
+    name: 'Registration',
+    href: '/Registration',
   },
     {
     name: 'Certificate',
