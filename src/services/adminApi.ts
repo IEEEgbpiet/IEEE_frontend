@@ -153,11 +153,11 @@ export interface CertificateApplication {
   name: string;
   email: string;
   branch: string;
-  eventName?: string;
+  eventName: string;
   event?: string;
   date: string;
-  position?: string;
-  status: string;
+  position?: string; // "1st" | "2nd" | "3rd" or undefined
+  status: 'pending' | 'approved' | 'rejected';
   createdAt?: string;
   updatedAt?: string;
 }
@@ -238,19 +238,25 @@ export const adminApi = {
     requestJson<{
       success: boolean;
       message: string;
-      data?: CertificateApplication;
+      data?: Partial<CertificateApplication>;
       email?: { messageId?: string };
     }>(`/api/v1/certificate/approved/${id}`, { method: 'PATCH' }),
 
   rejectCertificate: (id: string) =>
-    requestJson<{ success: boolean; message: string; data?: CertificateApplication }>(
-      `/api/v1/certificate/rejected/${id}`,
-      {
-        method: 'PATCH',
-      },
-    ),
+    requestJson<{
+      success: boolean;
+      message: string;
+      data?: Partial<CertificateApplication>;
+    }>(`/api/v1/certificate/rejected/${id}`, { method: 'PATCH' }),
 
-  createManualCertificate: (payload: Record<string, unknown>) =>
+  createManualCertificate: (payload: {
+    name: string;
+    email: string;
+    branch: string;
+    event: string;
+    date: string;
+    position?: string;
+  }) =>
     requestJson<{
       success: boolean;
       message: string;
@@ -261,26 +267,63 @@ export const adminApi = {
       body: JSON.stringify(payload),
     }),
 
+  /** Public endpoint — student self-applies for a certificate */
+  applyCertificate: (payload: {
+    name: string;
+    email: string;
+    branch: string;
+    event: string;
+    date: string;
+    position?: string;
+  }) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      data?: CertificateApplication;
+    }>(
+      '/api/v1/certificate/applynow',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true, // public — no auth
+    ),
+
   // 4. Support Tickets
   getSupportTickets: () =>
     requestJson<{ success: boolean; count?: number; tickets?: SupportTicket[] }>(
       '/api/v1/support/allticket',
     ),
 
+  viewSupportTicket: (id: string) =>
+    requestJson<{ success: boolean; ticket?: SupportTicket }>(
+      `/api/v1/support/viewTicket/${id}`,
+    ),
+
   closeSupportTicket: (id: string) =>
-    requestJson<{ success: boolean; message: string; ticket?: SupportTicket }>(
+    requestJson<{ success: boolean; message: string; ticket?: Partial<SupportTicket> }>(
       `/api/v1/support/closeTicket/${id}`,
-      {
-        method: 'PATCH',
-      },
+      { method: 'PATCH' },
     ),
 
   rejectSupportTicket: (id: string) =>
-    requestJson<{ success: boolean; message: string; ticket?: SupportTicket }>(
+    requestJson<{ success: boolean; message: string; ticket?: Partial<SupportTicket> }>(
       `/api/v1/support/Reject/${id}`,
-      {
-        method: 'PATCH',
-      },
+      { method: 'PATCH' },
+    ),
+
+  /** Public endpoint — submit a support inquiry */
+  sendSupportMessage: (payload: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      ticket?: SupportTicket;
+    }>(
+      '/api/v1/support/sendmsg',
+      { method: 'POST', body: JSON.stringify(payload) },
+      true, // public — no auth
     ),
 
   // 5. Upcoming Events Module (Direct MongoDB Integration per Apis.pdf)
