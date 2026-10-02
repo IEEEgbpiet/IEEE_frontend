@@ -6,16 +6,19 @@ import {
   Pencil,
   Plus,
   Sparkles,
-  MapPin,
   Trash2,
+  AlertCircle,
+  FileText,
 } from "lucide-react";
 import { adminApi } from '@/services/adminApi';
 
 type UpcomingEvent = {
   id: string;
   name: string;
+  title: string;
   date: string;
-  venue?: string;
+  lastDate: string;
+  imageUrl?: string;
 };
 
 export default function EditUpcomingDirectory() {
@@ -23,18 +26,22 @@ export default function EditUpcomingDirectory() {
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setIsLoading(true);
-        const res = await adminApi.getUpcomingEvents();
-        if (res.success && Array.isArray(res.posts)) {
-          setEvents(
-            res.posts.map((p) => ({
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await adminApi.getUpcomingEvents();
+      if (res.success && Array.isArray(res.posts)) {
+        setEvents(
+          res.posts.map((p) => {
+            const img = typeof p.image === 'object' && p.image ? p.image.url : (p.image as string) || '';
+            return {
               id: (p.postId || p._id || p.id) as string,
               name: (p.eventName || p.title) as string,
-              venue: (p.venue as string) || "GBPIET Campus",
+              title: (p.title || p.eventName) as string,
+              imageUrl: img,
               date: p.date
                 ? new Date(p.date as string).toLocaleDateString("en-US", {
                     day: "numeric",
@@ -42,28 +49,43 @@ export default function EditUpcomingDirectory() {
                     year: "numeric",
                   })
                 : "TBD",
-            }))
-          );
-        } else {
-          setEvents([]);
-        }
-      } catch {
+              lastDate: p.lastDate
+                ? new Date(p.lastDate as string).toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "TBD",
+            };
+          })
+        );
+      } else {
         setEvents([]);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Failed to load upcoming events:", err);
+      setError("Unable to retrieve events from MongoDB.");
+      setEvents([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEvents();
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this event post?")) return;
+    if (!window.confirm("Are you sure you want to permanently delete this event post from the remote database?")) {
+      return;
+    }
     try {
       setDeletingId(id);
       await adminApi.deleteUpcomingEvent(id);
       setEvents((prev) => prev.filter((e) => e.id !== id));
-    } catch {
-      alert("Failed to delete event post.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to delete event post from database.";
+      alert(msg);
     } finally {
       setDeletingId(null);
     }
@@ -88,7 +110,7 @@ export default function EditUpcomingDirectory() {
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Manage scheduled announcements, venue details, and post records.
+            Manage scheduled announcements stored in remote MongoDB database.
           </p>
         </div>
 
@@ -101,16 +123,23 @@ export default function EditUpcomingDirectory() {
         </Link>
       </div>
 
+      {error ? (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300 flex items-center gap-3">
+          <AlertCircle size={18} className="shrink-0 text-red-400" />
+          <span>{error}</span>
+        </div>
+      ) : null}
+
       {/* Modern Table Container */}
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-white/10 bg-admin-subtle/80 text-xs uppercase tracking-wider text-slate-300">
-                <th className="px-6 py-4 font-semibold">ID</th>
-                <th className="px-6 py-4 font-semibold">Event Name</th>
-                <th className="px-6 py-4 font-semibold">Venue / Location</th>
+                <th className="px-6 py-4 font-semibold">Post ID</th>
+                <th className="px-6 py-4 font-semibold">Event Name & Title</th>
                 <th className="px-6 py-4 font-semibold">Event Date</th>
+                <th className="px-6 py-4 font-semibold">Last Date</th>
                 <th className="px-6 py-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
@@ -121,7 +150,7 @@ export default function EditUpcomingDirectory() {
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center">
                       <div className="h-7 w-7 animate-spin rounded-full border-2 border-blue-500 border-t-transparent mb-3" />
-                      <p className="text-xs text-slate-400">Loading scheduled events...</p>
+                      <p className="text-xs text-slate-400">Fetching events from MongoDB...</p>
                     </div>
                   </td>
                 </tr>
@@ -139,19 +168,21 @@ export default function EditUpcomingDirectory() {
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-400 group-hover:scale-105 group-hover:border-blue-400/40 group-hover:bg-blue-500/20 transition-all">
-                          <Calendar size={16} />
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-400 group-hover:scale-105 group-hover:border-blue-400/40 group-hover:bg-blue-500/20 transition-all overflow-hidden">
+                          {evt.imageUrl ? (
+                            <img src={evt.imageUrl} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <FileText size={16} />
+                          )}
                         </div>
-                        <span className="text-white font-medium group-hover:text-blue-200 transition-colors">
-                          {evt.name}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <div className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-admin-subtle/60 px-2.5 py-1 text-xs text-slate-300">
-                        <MapPin size={13} className="text-yellow-400 shrink-0" />
-                        <span className="truncate max-w-[200px]">{evt.venue || "GBPIET Campus"}</span>
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium group-hover:text-blue-200 transition-colors">
+                            {evt.name}
+                          </span>
+                          {evt.title && evt.title !== evt.name ? (
+                            <span className="text-xs text-slate-400">{evt.title}</span>
+                          ) : null}
+                        </div>
                       </div>
                     </td>
 
@@ -159,6 +190,13 @@ export default function EditUpcomingDirectory() {
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-950/40 px-3 py-1 text-xs font-medium text-blue-300">
                         <Calendar size={12} className="text-blue-400" />
                         {evt.date}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-950/30 px-3 py-1 text-xs font-medium text-amber-300">
+                        <Calendar size={12} className="text-amber-400" />
+                        {evt.lastDate}
                       </span>
                     </td>
 
@@ -192,7 +230,7 @@ export default function EditUpcomingDirectory() {
                     <div className="flex flex-col items-center justify-center">
                       <Calendar className="mb-3 h-10 w-10 text-slate-600" />
                       <p className="text-sm font-medium text-slate-300">No upcoming events found</p>
-                      <p className="text-xs text-slate-500 mt-1">Click "Add New Event" to schedule an announcement.</p>
+                      <p className="text-xs text-slate-500 mt-1">Click &ldquo;Add New Event&rdquo; to schedule an announcement.</p>
                     </div>
                   </td>
                 </tr>

@@ -6,8 +6,8 @@ export default function App() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('ieee@gbpiet.ac.in');
+  const [password, setPassword] = useState('ieee@#123');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
