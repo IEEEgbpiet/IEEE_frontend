@@ -1,11 +1,9 @@
 # Build output
 dist/
+.astro
 .output/
 .vercel/
 .netlify/
-
-# Astro
-.astro/
 
 # Dependencies
 node_modules/

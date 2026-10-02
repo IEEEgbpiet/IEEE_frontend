@@ -1,35 +1,22 @@
-// @ts-check
-import eslintPluginAstro from 'eslint-plugin-astro';
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
-import eslintConfigPrettier from 'eslint-config-prettier';
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   {
-    ignores: ['dist/**', '.astro/**', 'node_modules/**', 'public/**'],
+    // Global ignore rule across all files/folders
+    ignores: ['**/.astro/**', 'dist/**', 'node_modules/**'],
   },
   {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-      'jsx-a11y': jsxA11y,
-    },
+    languageOptions: { ecmaVersion: 2020, globals: globals.browser },
+    plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: {
-      ...tsPlugin.configs.recommended.rules,
-      ...jsxA11y.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/consistent-type-imports': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
-  ...eslintPluginAstro.configs.recommended,
-  eslintConfigPrettier,
-];
+);
