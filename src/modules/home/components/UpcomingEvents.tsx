@@ -43,7 +43,6 @@ const getEventImage = (image?: UpcomingEvent['image']): string => {
 export default function UpcomingEvents() {
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<UpcomingEvent | null>(null);
 
   // Photo preview window state
@@ -63,7 +62,7 @@ export default function UpcomingEvents() {
     const fetchUpcomingEvents = async () => {
       try {
         setLoading(true);
-        setError(null);
+
         const res = await adminApi.getUpcomingEvents();
         if (isMounted) {
           if (res.success && Array.isArray(res.posts)) {
@@ -75,7 +74,6 @@ export default function UpcomingEvents() {
       } catch (err) {
         console.error('Failed to load upcoming events from API:', err);
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Failed to connect to backend server');
           setEvents([]);
         }
       } finally {
