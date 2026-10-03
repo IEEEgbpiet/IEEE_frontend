@@ -24,7 +24,7 @@ export default function ForgotPassword() {
   const [step, setStep] = useState<Step>('email');
 
   // Step 1: Email
-  const [email, setEmail] = useState('ieee@gbpiet.ac.in');
+  const [email, setEmail] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [emailError, setEmailError] = useState('');
 
@@ -79,7 +79,7 @@ export default function ForgotPassword() {
       setEmailError(
         err instanceof Error
           ? err.message
-          : 'Failed to send OTP. Please verify your email and try again.'
+          : 'Failed to send OTP. Please verify your email and try again.',
       );
     } finally {
       setIsSendingOtp(false);
@@ -133,34 +133,35 @@ export default function ForgotPassword() {
   };
 
   // Handle Step 2: Verify OTP
-  const handleVerifyOtp = useCallback(async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const fullOtp = otpDigits.join('');
-    if (fullOtp.length !== 6) {
-      setOtpError('Please enter all 6 digits of the OTP.');
-      return;
-    }
-
-    setIsVerifyingOtp(true);
-    setOtpError('');
-
-    try {
-      const response = await adminApi.verifyResetOtp(email.trim(), fullOtp);
-      if (!response.resetToken) {
-        throw new Error('Verification succeeded but reset token was not received.');
+  const handleVerifyOtp = useCallback(
+    async (e?: React.FormEvent) => {
+      if (e) e.preventDefault();
+      const fullOtp = otpDigits.join('');
+      if (fullOtp.length !== 6) {
+        setOtpError('Please enter all 6 digits of the OTP.');
+        return;
       }
-      setResetToken(response.resetToken);
-      setStep('password');
-    } catch (err) {
-      setOtpError(
-        err instanceof Error
-          ? err.message
-          : 'Invalid or expired OTP. Please try again.'
-      );
-    } finally {
-      setIsVerifyingOtp(false);
-    }
-  }, [email, otpDigits]);
+
+      setIsVerifyingOtp(true);
+      setOtpError('');
+
+      try {
+        const response = await adminApi.verifyResetOtp(email.trim(), fullOtp);
+        if (!response.resetToken) {
+          throw new Error('Verification succeeded but reset token was not received.');
+        }
+        setResetToken(response.resetToken);
+        setStep('password');
+      } catch (err) {
+        setOtpError(
+          err instanceof Error ? err.message : 'Invalid or expired OTP. Please try again.',
+        );
+      } finally {
+        setIsVerifyingOtp(false);
+      }
+    },
+    [email, otpDigits],
+  );
 
   // Auto-submit OTP when 6 digits are complete
   useEffect(() => {
@@ -217,7 +218,7 @@ export default function ForgotPassword() {
       setPasswordError(
         err instanceof Error
           ? err.message
-          : 'Failed to reset password. The reset token might have expired (valid for 10 minutes).'
+          : 'Failed to reset password. The reset token might have expired (valid for 10 minutes).',
       );
     } finally {
       setIsResettingPassword(false);
@@ -260,8 +261,8 @@ export default function ForgotPassword() {
                 step === 'otp'
                   ? 'bg-[#00629b] text-white ring-4 ring-[#00629b]/15'
                   : step === 'password'
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-100 text-slate-400'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-400'
               }`}
             >
               {step === 'password' ? '✓' : '2'}
@@ -294,7 +295,8 @@ export default function ForgotPassword() {
               </div>
               <h1 className="text-2xl font-bold text-slate-900">Forgot Password?</h1>
               <p className="mt-1.5 text-xs sm:text-sm text-slate-500">
-                Enter your registered IEEE administrator email to receive a 6-digit OTP verification code.
+                Enter your registered IEEE administrator email to receive a 6-digit OTP verification
+                code.
               </p>
             </div>
 
@@ -309,7 +311,10 @@ export default function ForgotPassword() {
 
             <form onSubmit={handleSendOtp} className="space-y-4">
               <div>
-                <label htmlFor="admin-email" className="mb-1.5 block text-sm font-medium text-slate-800">
+                <label
+                  htmlFor="admin-email"
+                  className="mb-1.5 block text-sm font-medium text-slate-800"
+                >
                   Admin Email Address
                 </label>
                 <div className="relative">
@@ -319,7 +324,6 @@ export default function ForgotPassword() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ieee@gbpiet.ac.in"
                     autoComplete="email"
                     required
                     className="
@@ -342,9 +346,6 @@ export default function ForgotPassword() {
                     "
                   />
                 </div>
-                <p className="mt-1.5 text-[11px] text-slate-400">
-                  Default registered administrator account: <span className="font-mono text-slate-600">ieee@gbpiet.ac.in</span>
-                </p>
               </div>
 
               <button
@@ -637,17 +638,17 @@ export default function ForgotPassword() {
                         passwordScore <= 2
                           ? 'text-red-500'
                           : passwordScore <= 3
-                          ? 'text-amber-500'
-                          : 'text-emerald-600'
+                            ? 'text-amber-500'
+                            : 'text-emerald-600'
                       }`}
                     >
                       {passwordScore <= 2
                         ? 'Weak'
                         : passwordScore <= 3
-                        ? 'Moderate'
-                        : passwordScore === 4
-                        ? 'Good'
-                        : 'Strong'}
+                          ? 'Moderate'
+                          : passwordScore === 4
+                            ? 'Good'
+                            : 'Strong'}
                     </span>
                   </div>
                   <div className="flex gap-1 h-1.5 w-full">
@@ -659,8 +660,8 @@ export default function ForgotPassword() {
                             ? passwordScore <= 2
                               ? 'bg-red-500'
                               : passwordScore <= 3
-                              ? 'bg-amber-500'
-                              : 'bg-emerald-500'
+                                ? 'bg-amber-500'
+                                : 'bg-emerald-500'
                             : 'bg-slate-200'
                         }`}
                       />
@@ -670,14 +671,20 @@ export default function ForgotPassword() {
                     <span className={newPassword.length >= 8 ? 'text-emerald-600 font-medium' : ''}>
                       ✓ Min 8 characters
                     </span>
-                    <span className={/[A-Z]/.test(newPassword) ? 'text-emerald-600 font-medium' : ''}>
+                    <span
+                      className={/[A-Z]/.test(newPassword) ? 'text-emerald-600 font-medium' : ''}
+                    >
                       ✓ Uppercase letter
                     </span>
-                    <span className={/[0-9]/.test(newPassword) ? 'text-emerald-600 font-medium' : ''}>
+                    <span
+                      className={/[0-9]/.test(newPassword) ? 'text-emerald-600 font-medium' : ''}
+                    >
                       ✓ Number
                     </span>
                     <span
-                      className={/[^A-Za-z0-9]/.test(newPassword) ? 'text-emerald-600 font-medium' : ''}
+                      className={
+                        /[^A-Za-z0-9]/.test(newPassword) ? 'text-emerald-600 font-medium' : ''
+                      }
                     >
                       ✓ Special character
                     </span>
@@ -728,13 +735,19 @@ export default function ForgotPassword() {
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
                 {confirmPassword && (
                   <p
                     className={`mt-1.5 text-xs flex items-center gap-1 ${
-                      newPassword === confirmPassword ? 'text-emerald-600 font-medium' : 'text-red-500'
+                      newPassword === confirmPassword
+                        ? 'text-emerald-600 font-medium'
+                        : 'text-red-500'
                     }`}
                   >
                     {newPassword === confirmPassword ? (
@@ -803,7 +816,8 @@ export default function ForgotPassword() {
 
             <h1 className="text-2xl font-bold text-slate-900">Password Reset Done!</h1>
             <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-              Your administrator account password has been successfully updated. You can now log in using your new credentials.
+              Your administrator account password has been successfully updated. You can now log in
+              using your new credentials.
             </p>
 
             <div className="mt-7 space-y-3">

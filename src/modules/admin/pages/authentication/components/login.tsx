@@ -6,8 +6,8 @@ export default function App() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('ieee@gbpiet.ac.in');
-  const [password, setPassword] = useState('ieee@#123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -90,8 +90,7 @@ export default function App() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@gbpiet.ac.in"
-              autoComplete="email"
+              placeholder="example@gbpiet.ac.in"
               required
               className="
                 h-12
@@ -134,7 +133,6 @@ export default function App() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                autoComplete="current-password"
                 required
                 className="
                   h-12
