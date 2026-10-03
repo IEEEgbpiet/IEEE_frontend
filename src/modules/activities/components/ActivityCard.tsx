@@ -1,11 +1,20 @@
-import type { Activity } from '@/data/activities/events';
+import { ZoomIn } from 'lucide-react';
+import type { Activity } from '../EventsPage';
 
 interface ActivityCardProps {
   activity: Activity;
   onClick?: () => void;
+  onImageClick?: (e: React.MouseEvent) => void;
 }
 
-export function ActivityCard({ activity, onClick }: ActivityCardProps) {
+export function ActivityCard({ activity, onClick, onImageClick }: ActivityCardProps) {
+  const handleImageClick = (e: React.MouseEvent) => {
+    if (onImageClick) {
+      e.stopPropagation();
+      onImageClick(e);
+    }
+  };
+
   return (
     <article
       onClick={onClick}
@@ -33,7 +42,11 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
       {/* =========================
           IMAGE
           ========================= */}
-      <div className="relative h-[230px] overflow-hidden sm:h-[270px]">
+      <div
+        className="relative h-[230px] overflow-hidden sm:h-[270px] cursor-zoom-in"
+        onClick={handleImageClick}
+        title="Click to view full photo"
+      >
         <img
           width={800}
           height={500}
@@ -51,6 +64,14 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
 
         {/* Image Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#080b0f] via-black/10 to-transparent" />
+
+        {/* View photo hover badge */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 backdrop-blur-[2px]">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-black/70 border border-white/20 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
+            <ZoomIn size={14} className="text-brand-blue-light" />
+            <span>View Photo</span>
+          </span>
+        </div>
       </div>
 
       {/* =========================

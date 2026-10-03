@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
 export default function App() {
@@ -115,9 +115,17 @@ export default function App() {
 
           {/* PASSWORD */}
           <div>
-            <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-800">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-800">
+                Password
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-xs font-semibold text-[#00629b] hover:text-[#004f7d] hover:underline transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
 
             <div className="relative">
               <input
