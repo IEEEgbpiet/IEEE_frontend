@@ -6,10 +6,15 @@ import {
   Layers,
   Headset,
   FileText,
-  ScrollText,
   Menu,
   X,
   LayoutDashboard,
+  ClipboardList,
+  UserPlus,
+  Users,
+  FolderOpen,
+  Settings,
+  HardDrive,
   type LucideIcon,
 } from "lucide-react";
 
@@ -41,6 +46,21 @@ const defaultItems: SidebarItem[] = [
     icon: Layers,
   },
   {
+    label: "Registration",
+    path: "/admin/registration",
+    icon: ClipboardList,
+  },
+  {
+    label: "IEEE Application",
+    path: "/admin/ieeeapplication",
+    icon: UserPlus,
+  },
+  {
+    label: "Members",
+    path: "/admin/members",
+    icon: Users,
+  },
+  {
     label: "Support",
     path: "/admin/support",
     icon: Headset,
@@ -51,9 +71,19 @@ const defaultItems: SidebarItem[] = [
     icon: FileText,
   },
   {
-    label: "Logs & Setting",
+    label: "User Directory",
+    path: "/admin/Directory",
+    icon: FolderOpen,
+  },
+  {
+    label: " Drive",
+    path: "/admin/drive",
+    icon: HardDrive,
+  },
+  {
+    label: "Admin & Settings",
     path: "/admin/logs",
-    icon: ScrollText,
+    icon: Settings,
   },
 ];
 
@@ -70,7 +100,8 @@ export default function Sidebar() {
             alt="IEEE Logo"
             className="h-8 w-auto object-contain brightness-0 invert"
           />
-          <span className="font-semibold text-sm">IEEE Portal</span>
+
+          <span className="text-sm font-semibold">IEEE Portal</span>
         </div>
 
         <button
@@ -110,9 +141,15 @@ export default function Sidebar() {
                   className="h-7 w-auto object-contain brightness-0 invert"
                 />
               </div>
+
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-white">IEEE Admin</p>
-                <p className="truncate text-xs text-slate-400">GBPIET Branch</p>
+                <p className="truncate text-sm font-semibold text-white">
+                  IEEE Admin
+                </p>
+
+                <p className="truncate text-xs text-slate-400">
+                  GBPIET Branch
+                </p>
               </div>
             </div>
 
@@ -141,7 +178,7 @@ export default function Sidebar() {
                 className={({ isActive }) =>
                   `group flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-brand-blue/15 text-blue-300 border border-brand-blue/30"
+                      ? "border border-brand-blue/30 bg-brand-blue/15 text-blue-300"
                       : "text-slate-400 hover:bg-white/5 hover:text-white"
                   }`
                 }
@@ -150,9 +187,14 @@ export default function Sidebar() {
                   <>
                     <Icon
                       size={18}
-                      className={isActive ? "text-brand-blue-light" : "text-slate-400 group-hover:text-white"}
                       strokeWidth={isActive ? 2.2 : 1.8}
+                      className={
+                        isActive
+                          ? "text-brand-blue-light"
+                          : "text-slate-400 group-hover:text-white"
+                      }
                     />
+
                     <span className="truncate">{item.label}</span>
                   </>
                 )}
