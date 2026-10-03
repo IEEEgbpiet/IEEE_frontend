@@ -11,6 +11,7 @@ import MainLayout from './components/layout/Layout';
 import PrivateRoute from './components/PrivateRoute'; //Also uncomment this later.
 import Login from './modules/admin/pages/authentication/components/login';
 import AdminRoutes from './modules/admin/router';
+import FrontendCommingSoon from './pages/FrontendCommingSoon'
 
 export function AppRouter() {
   return (
@@ -27,6 +28,8 @@ export function AppRouter() {
           <Route path="/certificates" element={<CertificateForm />} />
           <Route path="/certificate/apply" element={<CertificateForm />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/registration" element={<FrontendCommingSoon/>} />
+          <Route path="/joinieee" element={<FrontendCommingSoon/>} />
         </Route>
 
         {/* Auth Route */}

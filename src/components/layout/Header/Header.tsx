@@ -164,7 +164,7 @@ export default function Header() {
             </button>
 
             <Link
-              to="/contact"
+              to="/joinieee"
               className="hidden h-[46px] items-center gap-2 whitespace-nowrap rounded-full px-[26px] text-[15px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:brightness-110 lg:inline-flex"
               style={{ background: 'var(--color-brand-blue-cta)' }}
             >
