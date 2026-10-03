@@ -1,5 +1,6 @@
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { useState } from "react";
+import { Outlet, useNavigate, useLocation, NavLink } from "react-router-dom";
+import { LogOut, KeyRound, Loader2 } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from "./Sidebar";
 
@@ -7,10 +8,12 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const getPageTitle = () => {
     const path = location.pathname;
     if (path === "/admin" || path === "/admin/dashboard") return "Dynamic Area";
+    if (path.includes("/admin/change-password")) return "Change Password & Security";
     if (path.includes("/admin/certificates/issued")) return "History of Issued Certificates";
     if (path.includes("/admin/certificates/requests")) return "Requested Certificates";
     if (path.includes("/admin/certificates/templates")) return "Enter Details";
@@ -29,9 +32,14 @@ export default function AdminLayout() {
     return "Admin Panel";
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setIsLoggingOut(false);
+      navigate("/login");
+    }
   };
 
   return (
@@ -47,14 +55,38 @@ export default function AdminLayout() {
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <NavLink
+              to="/admin/change-password"
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isActive
+                    ? "border-brand-blue/40 bg-brand-blue/20 text-brand-blue-light"
+                    : "border-white/15 bg-admin-subtle text-slate-300 hover:bg-admin-card-hover hover:text-white hover:border-white/30"
+                }`
+              }
+            >
+              <KeyRound size={13} />
+              <span>Password & Security</span>
+            </NavLink>
+
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-lg border border-white/15 bg-admin-subtle px-3.5 py-1.5 text-xs font-semibold text-white transition-all hover:bg-admin-card-hover hover:border-white/30"
+              disabled={isLoggingOut}
+              className="flex items-center gap-2 rounded-lg border border-white/15 bg-admin-subtle px-3.5 py-1.5 text-xs font-semibold text-white transition-all hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-300 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <LogOut size={14} />
-              <span>Logout</span>
+              {isLoggingOut ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>Logging out...</span>
+                </>
+              ) : (
+                <>
+                  <LogOut size={14} />
+                  <span>Logout</span>
+                </>
+              )}
             </button>
           </div>
         </header>

@@ -63,10 +63,18 @@ export async function requestJson<T>(endpoint: string, options: RequestInit = {}
     }
   }
 
-  const response = await fetch(buildApiUrl(endpoint), {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(buildApiUrl(endpoint), {
+      ...options,
+      headers,
+    });
+  } catch (networkError) {
+    console.error("Network request failed for:", endpoint, networkError);
+    throw new Error(
+      'Unable to reach backend server. If using Render free tier, the server might be waking up (takes ~30-45s). Please try again in a moment.'
+    );
+  }
 
   const text = await response.text();
   let payload: Record<string, unknown> | null = null;
@@ -203,6 +211,39 @@ export const adminApi = {
       '/api/v1/auth/logout',
       {
         method: 'POST',
+      },
+      true,
+    ),
+
+  generateResetOtp: async (email: string) =>
+    requestJson<{ success: boolean; message: string }>(
+      '/api/v1/auth/resetPassword/otp/generateOTP',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email: email.trim() }),
+      },
+      true,
+    ),
+
+  verifyResetOtp: async (email: string, otp: string) =>
+    requestJson<{ success: boolean; message: string; resetToken: string }>(
+      '/api/v1/auth/resetPassword/otp/verifyOtp',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email: email.trim(), otp: otp.trim() }),
+      },
+      true,
+    ),
+
+  resetPassword: async (newPassword: string, resetToken: string) =>
+    requestJson<{ success: boolean; message: string }>(
+      '/api/v1/auth/resetPassword',
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${resetToken.trim()}`,
+        },
+        body: JSON.stringify({ newPassword, resetToken: resetToken.trim() }),
       },
       true,
     ),

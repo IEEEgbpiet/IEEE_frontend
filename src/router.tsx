@@ -10,6 +10,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import MainLayout from './components/layout/Layout';
 import PrivateRoute from './components/PrivateRoute'; //Also uncomment this later.
 import Login from './modules/admin/pages/authentication/components/login';
+import ForgotPassword from './modules/admin/pages/authentication/ForgotPassword';
 import AdminRoutes from './modules/admin/router';
 import FrontendCommingSoon from './pages/FrontendCommingSoon'
 
@@ -32,8 +33,10 @@ export function AppRouter() {
           <Route path="/joinieee" element={<FrontendCommingSoon/>} />
         </Route>
 
-        {/* Auth Route */}
+        {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ForgotPassword />} />
 
         {/* CMS / Admin Portal Nested Routes */}
         <Route

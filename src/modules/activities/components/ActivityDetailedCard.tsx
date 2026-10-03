@@ -1,5 +1,5 @@
 
-import { X } from "lucide-react";
+import { X, ZoomIn } from "lucide-react";
 
 type Activity = {
   id: string;
@@ -21,11 +21,13 @@ type Activity = {
 interface ActivityDetailedCardProps {
   activity: Activity;
   onClose: () => void;
+  onImageClick?: (imgUrl: string, title: string) => void;
 }
 
 export default function ActivityDetailedCard({
   activity,
   onClose,
+  onImageClick,
 }: ActivityDetailedCardProps) {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm">
@@ -33,7 +35,11 @@ export default function ActivityDetailedCard({
         <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-[#080b0f] shadow-2xl">
           
           {/* Header */}
-          <div className="relative">
+          <div
+            className={`relative ${onImageClick ? 'cursor-zoom-in' : ''}`}
+            onClick={() => onImageClick?.(activity.image, activity.title)}
+            title="Click to view full photo"
+          >
             <img
               width={1200}
               height={700}
@@ -44,9 +50,19 @@ export default function ActivityDetailedCard({
 
             <div className="absolute inset-0 bg-gradient-to-t from-[#080b0f] via-black/30 to-transparent" />
 
+            {/* Click to zoom badge */}
+            <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-xs font-semibold text-white/90 border border-white/15">
+              <ZoomIn size={14} className="text-brand-blue-light" />
+              <span>View Full Photo</span>
+            </div>
+
             <button
-              onClick={onClose}
-              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white transition hover:bg-black/80"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white transition hover:bg-black/80"
               aria-label="Close"
             >
               <X size={20} />

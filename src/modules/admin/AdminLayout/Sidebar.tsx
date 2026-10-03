@@ -15,6 +15,7 @@ import {
   FolderOpen,
   Settings,
   HardDrive,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -84,6 +85,11 @@ const defaultItems: SidebarItem[] = [
     label: "Admin & Settings",
     path: "/admin/logs",
     icon: Settings,
+  },
+  {
+    label: "Change Password",
+    path: "/admin/change-password",
+    icon: KeyRound,
   },
 ];
 

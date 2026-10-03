@@ -33,6 +33,10 @@ import ReportsPage from './pages/reports/page';
 // System
 import LogsPage from './pages/logs/page';
 
+// Security & Authentication
+import ChangePassword from './pages/authentication/ChangePassword';
+import ForgotPassword from './pages/authentication/ForgotPassword';
+
 // Shared
 import CommingSoonPage from '../../pages/ComingSoonpage';
 import { PageNotFound } from './pages/pageNotFound';
@@ -110,6 +114,13 @@ export default function AdminRoutes() {
         ============================================================ */}
 
         <Route path="logs" element={<LogsPage />} />
+
+        {/* ============================================================
+            SECURITY / PASSWORD
+        ============================================================ */}
+
+        <Route path="change-password" element={<ChangePassword />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
 
         {/* ============================================================
             COMING SOON

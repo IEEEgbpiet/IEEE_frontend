@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { KeyRound } from "lucide-react";
 
 type LogEntry = {
   id: string;
@@ -41,10 +43,17 @@ export default function LogsPage() {
 
   return (
     <div className="space-y-6 bg-admin-bg text-white">
-      <div className="border-b border-white/10 pb-3">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
         <h1 className="text-xl font-semibold text-white">
           Logs & Setting
         </h1>
+        <Link
+          to="/admin/change-password"
+          className="flex items-center gap-2 rounded-lg border border-brand-blue/40 bg-brand-blue/15 px-3.5 py-1.5 text-xs font-semibold text-brand-blue-light transition-all hover:bg-brand-blue/25"
+        >
+          <KeyRound size={14} />
+          <span>Security & Password</span>
+        </Link>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-white/15 bg-admin-card">
