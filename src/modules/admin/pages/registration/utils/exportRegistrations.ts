@@ -76,48 +76,55 @@ export async function exportToPDF(
 
   // ── INDIVIDUAL SHEET ────────────────────────────────────────────
   const individuals = registrations.filter((r) => r.mode === 'INDIVIDUAL');
-
-  addPageHeader('Individual Registrations');
-
-  autoTable(doc, {
-    startY: 26,
-    head: [['Reg ID', 'Event', 'Date', 'Name', 'Roll No', 'Email', 'Phone', 'Branch', 'Year']],
-    body: individuals.flatMap((r) =>
-      (r.members || []).map((m) => [
-        r.registrationId,
-        r.eventName,
-        r.date,
-        m.name,
-        m.instituteId,
-        m.email,
-        m.phone,
-        m.branch,
-        m.year,
-      ])
-    ),
-    headStyles: {
-      fillColor: [11, 63, 156],
-      textColor: 255,
-      fontStyle: 'bold',
-      fontSize: 8,
-    },
-    bodyStyles: { fontSize: 8, cellPadding: 3 },
-    alternateRowStyles: { fillColor: [245, 248, 255] },
-    columnStyles: {
-      0: { cellWidth: 22, fontStyle: 'bold' },
-      1: { cellWidth: 55 },
-      2: { cellWidth: 22 },
-      5: { cellWidth: 48 },
-    },
-    margin: { left: 14, right: 14 },
-  });
-
-  // ── TEAM SHEET ─────────────────────────────────────────────────
   const teams = registrations.filter((r) => r.mode === 'TEAM');
 
+  let pageHasContent = false;
+
+  if (individuals.length > 0) {
+    addPageHeader('Individual Registrations');
+    pageHasContent = true;
+
+    autoTable(doc, {
+      startY: 26,
+      head: [['Reg ID', 'Event', 'Date', 'Name', 'Roll No', 'Email', 'Phone', 'Branch', 'Year']],
+      body: individuals.flatMap((r) =>
+        (r.members || []).map((m) => [
+          r.registrationId,
+          r.eventName,
+          r.date,
+          m.name,
+          m.instituteId,
+          m.email,
+          m.phone,
+          m.branch,
+          m.year,
+        ])
+      ),
+      headStyles: {
+        fillColor: [11, 63, 156],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 8,
+      },
+      bodyStyles: { fontSize: 8, cellPadding: 3 },
+      alternateRowStyles: { fillColor: [245, 248, 255] },
+      columnStyles: {
+        0: { cellWidth: 22, fontStyle: 'bold' },
+        1: { cellWidth: 55 },
+        2: { cellWidth: 22 },
+        5: { cellWidth: 48 },
+      },
+      margin: { left: 14, right: 14 },
+    });
+  }
+
+  // ── TEAM SHEET ─────────────────────────────────────────────────
   if (teams.length > 0) {
-    doc.addPage();
+    if (pageHasContent) {
+      doc.addPage();
+    }
     addPageHeader('Team Registrations');
+    pageHasContent = true;
 
     // Build body: for each team, a group-header row then one row per member
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

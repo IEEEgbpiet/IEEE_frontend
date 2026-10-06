@@ -1,3 +1,4 @@
+import React from 'react';
 import { Search, X, RotateCw, Filter } from 'lucide-react';
 
 interface RegistrationSearchBarProps {
@@ -8,6 +9,7 @@ interface RegistrationSearchBarProps {
   onRefresh: () => void;
   isLoading: boolean;
   totalFiltered: number;
+  exportAction?: React.ReactNode;
 }
 
 export default function RegistrationSearchBar({
@@ -18,18 +20,19 @@ export default function RegistrationSearchBar({
   onRefresh,
   isLoading,
   totalFiltered,
+  exportAction,
 }: RegistrationSearchBarProps) {
   return (
-    <div className="bg-admin-surface border border-white/10 rounded-xl p-3 sm:p-4 space-y-3">
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
-        {/* Search Input for User Data */}
-        <div className="relative flex-1">
+    <div className="bg-admin-surface border border-white/10 rounded-2xl p-3 sm:p-4 space-y-3 shadow-lg">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+        {/* Search Input for User Data (dominant left side) */}
+        <div className="relative flex-1 min-w-0">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by participant name, roll no, email, team name, phone, reg ID, branch..."
+            placeholder="Search participant name, roll no, email, team name, branch, phone, ID..."
             className="w-full bg-admin-bg border border-white/10 rounded-xl pl-10 pr-9 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           />
           {searchQuery && (
@@ -44,8 +47,12 @@ export default function RegistrationSearchBar({
           )}
         </div>
 
-        {/* Filter by Mode */}
-        <div className="flex items-center gap-2">
+        {/* Right next to search bar: Export PDF, Mode Filter, Refresh */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end">
+          {/* Export PDF Button */}
+          {exportAction}
+
+          {/* Filter by Mode */}
           <div className="relative">
             <Filter className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
             <select
@@ -53,7 +60,7 @@ export default function RegistrationSearchBar({
               onChange={(e) =>
                 onModeFilterChange(e.target.value as 'all' | 'INDIVIDUAL' | 'TEAM')
               }
-              className="bg-admin-bg border border-white/10 rounded-xl pl-8 pr-8 py-2.5 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+              className="bg-admin-bg border border-white/10 rounded-xl pl-8 pr-7 py-2.5 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
             >
               <option value="all">All Formats</option>
               <option value="TEAM">Teams Only</option>
@@ -75,7 +82,7 @@ export default function RegistrationSearchBar({
       </div>
 
       {/* Results status indicator */}
-      <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+      <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-0.5">
         <div>
           Showing <span className="text-white font-medium">{totalFiltered}</span> registration records
           {searchQuery && (
