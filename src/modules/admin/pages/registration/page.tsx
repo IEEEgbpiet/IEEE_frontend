@@ -13,7 +13,7 @@ import RegistrationStats from './components/RegistrationStats';
 import EventFilterTabs from './components/EventFilterTabs';
 import RegistrationSearchBar from './components/RegistrationSearchBar';
 import RegistrationCard from './components/RegistrationCard';
-import RegistrationDetailModal from './components/RegistrationDetailModal';
+import ExportButton from './components/ExportButton';
 
 export default function AdminRegistrationPage() {
   const [registrations, setRegistrations] = useState<RegistrationRecord[]>([]);
@@ -25,8 +25,6 @@ export default function AdminRegistrationPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [modeFilter, setModeFilter] = useState<'all' | 'INDIVIDUAL' | 'TEAM'>('all');
 
-  // Modal
-  const [selectedRecord, setSelectedRecord] = useState<RegistrationRecord | null>(null);
 
   useEffect(() => {
     document.title = 'Event Registrations | IEEE Admin Portal';
@@ -143,6 +141,15 @@ export default function AdminRegistrationPage() {
     });
   }, [registrations, selectedEvent, modeFilter, searchQuery]);
 
+  // Human-readable label for the current filter (used in export file names)
+  const filterLabel = useMemo(() => {
+    const parts: string[] = [];
+    if (selectedEvent !== 'ALL') parts.push(selectedEvent);
+    if (modeFilter !== 'all') parts.push(modeFilter);
+    if (searchQuery.trim()) parts.push(`search:${searchQuery.trim()}`);
+    return parts.length > 0 ? parts.join(' | ') : 'All Events';
+  }, [selectedEvent, modeFilter, searchQuery]);
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
@@ -160,6 +167,13 @@ export default function AdminRegistrationPage() {
             Browse, filter, and inspect student registrations, team rosters, and participant verification.
           </p>
         </div>
+
+        {/* Export Button — downloads filtered or all data as Excel / PDF */}
+        <ExportButton
+          filteredRegistrations={filteredRegistrations}
+          allRegistrations={registrations}
+          filterLabel={filterLabel}
+        />
       </div>
 
       {/* Metrics Banner */}
@@ -235,22 +249,15 @@ export default function AdminRegistrationPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {filteredRegistrations.map((reg) => (
             <RegistrationCard
               key={reg._id || reg.registrationId}
               registration={reg}
-              onViewDetails={setSelectedRecord}
             />
           ))}
         </div>
       )}
-
-      {/* Full Details Modal */}
-      <RegistrationDetailModal
-        registration={selectedRecord}
-        onClose={() => setSelectedRecord(null)}
-      />
     </div>
   );
 }
