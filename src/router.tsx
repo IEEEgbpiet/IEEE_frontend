@@ -6,6 +6,7 @@ import ContactPage from '@/modules/contact/page';
 import HomePage from '@/modules/home/page';
 import TeamsPage from '@/modules/teams/page';
 import CertificateForm from '@/components/Certificate';
+import RegistrationPage from '@/modules/registration/page';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import MainLayout from './components/layout/Layout';
 import PrivateRoute from './components/PrivateRoute'; //Also uncomment this later.
@@ -29,7 +30,8 @@ export function AppRouter() {
           <Route path="/certificates" element={<CertificateForm />} />
           <Route path="/certificate/apply" element={<CertificateForm />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/registration" element={<FrontendCommingSoon/>} />
+          <Route path="/registration" element={<RegistrationPage />} />
+          <Route path="/Registration" element={<RegistrationPage />} />
           <Route path="/joinieee" element={<FrontendCommingSoon/>} />
         </Route>
 

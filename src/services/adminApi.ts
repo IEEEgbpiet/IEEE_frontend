@@ -170,6 +170,34 @@ export interface CertificateApplication {
   updatedAt?: string;
 }
 
+export interface RegistrationMember {
+  instituteId: string;
+  name: string;
+  phone: string;
+  email: string;
+  year: number;
+  branch: string;
+}
+
+export interface RegistrationRecord {
+  _id?: string;
+  registrationId: string;
+  date: string;
+  eventName: string;
+  mode: 'INDIVIDUAL' | 'TEAM';
+  teamName: string | null;
+  members: RegistrationMember[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface NewRegistrationPayload {
+  eventName: string;
+  date: string;
+  teamName?: string;
+  members: RegistrationMember[];
+}
+
 export interface SupportTicket {
   [key: string]: unknown;
   _id: string;
@@ -443,6 +471,31 @@ export const adminApi = {
     requestJson<{ success: boolean; message: string }>(`/api/v1/department/delete/${id}`, {
       method: 'DELETE',
     }),
+
+  // 8. Registration Module
+  createRegistration: (data: NewRegistrationPayload, mode: 'INDIVIDUAL' | 'TEAM') =>
+    requestJson<{ success: boolean; data: RegistrationRecord; message?: string }>(
+      `/api/v1/registration/new?mode=${encodeURIComponent(mode)}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+      true,
+    ),
+
+  getRegistrationInfo: (registrationId: string) =>
+    requestJson<{ success: boolean; data: RegistrationRecord }>(
+      `/api/v1/registration/getInfo/${encodeURIComponent(registrationId)}`,
+      {},
+      true,
+    ),
+
+  getAllRegistrations: () =>
+    requestJson<{ success: boolean; data: RegistrationRecord[] }>(
+      '/api/v1/registration/getAll',
+      {},
+      true,
+    ),
 };
 
 export const api = adminApi;
