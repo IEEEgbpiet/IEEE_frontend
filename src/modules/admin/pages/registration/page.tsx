@@ -6,10 +6,8 @@ import {
   FilterX,
 } from 'lucide-react';
 import { adminApi, type RegistrationRecord } from '@/services/adminApi';
-import type { RegistrationStatsData } from './types';
 
 // Child Components
-import RegistrationStats from './components/RegistrationStats';
 import EventFilterTabs from './components/EventFilterTabs';
 import RegistrationSearchBar from './components/RegistrationSearchBar';
 import RegistrationCard from './components/RegistrationCard';
@@ -24,7 +22,6 @@ export default function AdminRegistrationPage() {
   const [selectedEvent, setSelectedEvent] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [modeFilter, setModeFilter] = useState<'all' | 'INDIVIDUAL' | 'TEAM'>('all');
-
 
   useEffect(() => {
     document.title = 'Event Registrations | IEEE Admin Portal';
@@ -59,26 +56,6 @@ export default function AdminRegistrationPage() {
   useEffect(() => {
     fetchRegistrations();
   }, [fetchRegistrations]);
-
-  // Aggregate Stats
-  const stats: RegistrationStatsData = useMemo(() => {
-    let participants = 0;
-    let teams = 0;
-    let individuals = 0;
-
-    for (const r of registrations) {
-      participants += (r.members || []).length;
-      if (r.mode === 'TEAM') teams++;
-      else individuals++;
-    }
-
-    return {
-      totalRegistrations: registrations.length,
-      totalParticipants: participants,
-      totalTeams: teams,
-      totalIndividuals: individuals,
-    };
-  }, [registrations]);
 
   // Extract unique events with registration counts
   const eventTabs = useMemo(() => {
@@ -151,43 +128,8 @@ export default function AdminRegistrationPage() {
   }, [selectedEvent, modeFilter, searchQuery]);
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/10">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Event Registrations
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              Admin Portal
-            </span>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Browse, filter, and inspect student registrations, team rosters, and participant verification.
-          </p>
-        </div>
-
-        {/* Export Button — downloads filtered or all data as Excel / PDF */}
-        <ExportButton
-          filteredRegistrations={filteredRegistrations}
-          allRegistrations={registrations}
-          filterLabel={filterLabel}
-        />
-      </div>
-
-      {/* Metrics Banner */}
-      <RegistrationStats stats={stats} />
-
-      {/* Event Filter Tabs */}
-      <EventFilterTabs
-        events={eventTabs}
-        selectedEvent={selectedEvent}
-        onSelectEvent={setSelectedEvent}
-        totalCount={registrations.length}
-      />
-
-      {/* Search & Mode Filters */}
+    <div className="space-y-4">
+      {/* Search Bar on main left side + Export PDF, Mode Filter, Refresh on right */}
       <RegistrationSearchBar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -196,6 +138,21 @@ export default function AdminRegistrationPage() {
         onRefresh={fetchRegistrations}
         isLoading={loading}
         totalFiltered={filteredRegistrations.length}
+        exportAction={
+          <ExportButton
+            filteredRegistrations={filteredRegistrations}
+            allRegistrations={registrations}
+            filterLabel={filterLabel}
+          />
+        }
+      />
+
+      {/* Event Filter Tabs */}
+      <EventFilterTabs
+        events={eventTabs}
+        selectedEvent={selectedEvent}
+        onSelectEvent={setSelectedEvent}
+        totalCount={registrations.length}
       />
 
       {/* Error Alert */}

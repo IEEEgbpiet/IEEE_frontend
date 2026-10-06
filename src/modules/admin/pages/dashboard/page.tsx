@@ -8,18 +8,30 @@ import {
   Headset,
   Sparkles,
   BarChart3,
+  ClipboardList,
+  Users,
+  User,
+  UserCheck,
 } from "lucide-react";
 import {
   DepartmentBarChart,
   DonutChart,
 } from "./components/DashboardCharts";
-import { adminApi } from '@/services/adminApi';
+import { adminApi, type RegistrationRecord } from '@/services/adminApi';
+
+type RegistrationSummary = {
+  totalRegistrations: number;
+  totalParticipants: number;
+  totalTeams: number;
+  totalIndividuals: number;
+};
 
 type DashboardSummary = {
   departmentCounts: Record<string, number>;
   upcomingEvents: Array<{ eventName: string; lastDate: string }>;
   ticketStatus: { pending?: number; rejected?: number; solved?: number };
   certificateStatus: Record<string, number>;
+  registrationStats: RegistrationSummary;
 };
 
 export default function DashboardPage() {
@@ -28,6 +40,12 @@ export default function DashboardPage() {
     upcomingEvents: [],
     ticketStatus: {},
     certificateStatus: {},
+    registrationStats: {
+      totalRegistrations: 0,
+      totalParticipants: 0,
+      totalTeams: 0,
+      totalIndividuals: 0,
+    },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,11 +56,18 @@ export default function DashboardPage() {
         setLoading(true);
         setError('');
 
-        const [departmentResponse, eventsResponse, supportResponse, certificateResponse] = await Promise.all([
+        const [
+          departmentResponse,
+          eventsResponse,
+          supportResponse,
+          certificateResponse,
+          registrationResponse,
+        ] = await Promise.all([
           adminApi.getDashboardDepartmentCounts(),
           adminApi.getDashboardEvents(),
           adminApi.getDashboardSupportSummary(),
           adminApi.getDashboardCertificateSummary(),
+          adminApi.getAllRegistrations().catch(() => ({ success: false, data: [] })),
         ]);
 
         // Handle both { success: true, data: { ... } } and direct object returns
@@ -63,11 +88,31 @@ export default function DashboardPage() {
           ? eventsResponse.data
           : (Array.isArray(eventsResponse) ? eventsResponse : []);
 
+        const regList: RegistrationRecord[] = (registrationResponse && typeof registrationResponse === 'object' && 'data' in registrationResponse && Array.isArray((registrationResponse as { data: unknown }).data))
+          ? (registrationResponse as { data: RegistrationRecord[] }).data
+          : (Array.isArray(registrationResponse) ? (registrationResponse as RegistrationRecord[]) : []);
+
+        let regParticipants = 0;
+        let regTeams = 0;
+        let regIndividuals = 0;
+
+        for (const r of regList) {
+          regParticipants += (r.members || []).length;
+          if (r.mode === 'TEAM') regTeams++;
+          else regIndividuals++;
+        }
+
         setSummary({
           departmentCounts: deptData,
           upcomingEvents: eventData,
           ticketStatus: supportData,
           certificateStatus: certData,
+          registrationStats: {
+            totalRegistrations: regList.length,
+            totalParticipants: regParticipants,
+            totalTeams: regTeams,
+            totalIndividuals: regIndividuals,
+          },
         });
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Unable to load dashboard data.');
@@ -130,19 +175,123 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-admin-card via-admin-surface to-admin-card p-6 sm:p-8 backdrop-blur-xl shadow-xl">
-        <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col gap-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300 w-fit">
-            <Sparkles size={13} className="text-blue-400" />
-            <span>Branch Control Center</span>
+
+      {/* Event Registrations KPI Overview Section (Moved from Event Registration page) */}
+      <div className="rounded-2xl border border-white/10 bg-gradient-to-b from-admin-card to-admin-surface p-5 sm:p-6 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-500/25 bg-blue-600/15 text-blue-400">
+              <ClipboardList size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-white">
+                  Event Registrations
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  Live Entries
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Participant signups, team compositions, and verification stats
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Administration Dashboard
-          </h1>
-          <p className="text-sm text-slate-400 max-w-xl">
-            Real-time branch activity overview, certificate distribution, scheduled technical events, and member inquiries.
-          </p>
+
+          <Link
+            to="/admin/registration"
+            className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-xl border border-white/10 bg-admin-subtle/80 hover:bg-blue-600/20 hover:border-blue-400/40 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-blue-300 transition-all cursor-pointer"
+          >
+            <span>Manage Registrations</span>
+            <ArrowUpRight size={14} />
+          </Link>
+        </div>
+
+        {/* 4 Metric Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5">
+          {/* Total Entries */}
+          <Link
+            to="/admin/registration"
+            className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 transition-all hover:border-blue-400/30 hover:bg-blue-950/20 group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Total Entries</span>
+              <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
+                <ClipboardList className="w-4 h-4" />
+              </div>
+            </div>
+            {loading ? (
+              <div className="mt-3 h-8 w-16 animate-pulse rounded bg-white/10" />
+            ) : (
+              <p className="mt-2 text-2xl sm:text-3xl font-bold text-white font-mono tracking-tight">
+                {summary.registrationStats.totalRegistrations}
+              </p>
+            )}
+            <p className="mt-1 text-[11px] text-slate-400">Submitted registrations</p>
+          </Link>
+
+          {/* Total Students */}
+          <Link
+            to="/admin/registration"
+            className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 transition-all hover:border-indigo-400/30 hover:bg-indigo-950/20 group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Total Students</span>
+              <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:scale-110 transition-transform">
+                <UserCheck className="w-4 h-4" />
+              </div>
+            </div>
+            {loading ? (
+              <div className="mt-3 h-8 w-16 animate-pulse rounded bg-white/10" />
+            ) : (
+              <p className="mt-2 text-2xl sm:text-3xl font-bold text-indigo-300 font-mono tracking-tight">
+                {summary.registrationStats.totalParticipants}
+              </p>
+            )}
+            <p className="mt-1 text-[11px] text-indigo-400/80">Enrolled participants</p>
+          </Link>
+
+          {/* Teams */}
+          <Link
+            to="/admin/registration"
+            className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 transition-all hover:border-emerald-400/30 hover:bg-emerald-950/20 group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Teams</span>
+              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4" />
+              </div>
+            </div>
+            {loading ? (
+              <div className="mt-3 h-8 w-16 animate-pulse rounded bg-white/10" />
+            ) : (
+              <p className="mt-2 text-2xl sm:text-3xl font-bold text-emerald-400 font-mono tracking-tight">
+                {summary.registrationStats.totalTeams}
+              </p>
+            )}
+            <p className="mt-1 text-[11px] text-emerald-400/80">Multi-member squads</p>
+          </Link>
+
+          {/* Individuals */}
+          <Link
+            to="/admin/registration"
+            className="rounded-xl border border-white/10 bg-admin-subtle/60 p-4 transition-all hover:border-amber-400/30 hover:bg-amber-950/20 group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400">Individual</span>
+              <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform">
+                <User className="w-4 h-4" />
+              </div>
+            </div>
+            {loading ? (
+              <div className="mt-3 h-8 w-16 animate-pulse rounded bg-white/10" />
+            ) : (
+              <p className="mt-2 text-2xl sm:text-3xl font-bold text-amber-300 font-mono tracking-tight">
+                {summary.registrationStats.totalIndividuals}
+              </p>
+            )}
+            <p className="mt-1 text-[11px] text-amber-400/80">Solo participants</p>
+          </Link>
         </div>
       </div>
 
