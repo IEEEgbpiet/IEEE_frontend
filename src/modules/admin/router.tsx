@@ -37,6 +37,9 @@ import LogsPage from './pages/logs/page';
 import ChangePassword from './pages/authentication/ChangePassword';
 import ForgotPassword from './pages/authentication/ForgotPassword';
 
+// Registration
+import AdminRegistrationPage from './pages/registration/page';
+
 // Shared
 import CommingSoonPage from '../../pages/ComingSoonpage';
 import { PageNotFound } from './pages/pageNotFound';
@@ -123,10 +126,14 @@ export default function AdminRoutes() {
         <Route path="forgot-password" element={<ForgotPassword />} />
 
         {/* ============================================================
-            COMING SOON
+            REGISTRATION
         ============================================================ */}
 
-        <Route path="registration" element={<CommingSoonPage />} />
+        <Route path="registration" element={<AdminRegistrationPage />} />
+
+        {/* ============================================================
+            COMING SOON
+        ============================================================ */}
 
         <Route path="ieeeapplication" element={<CommingSoonPage />} />
 
