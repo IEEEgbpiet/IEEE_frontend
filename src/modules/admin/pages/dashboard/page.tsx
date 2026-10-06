@@ -6,7 +6,6 @@ import {
   Award,
   Calendar,
   Headset,
-  Sparkles,
   BarChart3,
   ClipboardList,
   Users,
