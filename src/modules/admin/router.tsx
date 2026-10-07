@@ -53,7 +53,6 @@ export default function AdminRoutes() {
         ============================================================ */}
 
         <Route index element={<DashboardPage />} />
-
         <Route path="dashboard" element={<DashboardPage />} />
 
         {/* ============================================================
@@ -62,11 +61,8 @@ export default function AdminRoutes() {
 
         <Route path="certificates">
           <Route index element={<Certificates />} />
-
           <Route path="issued" element={<IssuedCertificates />} />
-
           <Route path="requests" element={<RequestedCertificates />} />
-
           <Route path="templates" element={<ManualCertificateEntry />} />
         </Route>
 
@@ -76,11 +72,8 @@ export default function AdminRoutes() {
 
         <Route path="upcoming-posts">
           <Route index element={<UpcomingEventsHub />} />
-
           <Route path="add" element={<AddUpcomingPost />} />
-
           <Route path="manage" element={<EditUpcomingDirectory />} />
-
           <Route path="edit/:id" element={<EditUpcomingPostPanel />} />
         </Route>
 
@@ -90,13 +83,9 @@ export default function AdminRoutes() {
 
         <Route path="department-posts">
           <Route index element={<DepartmentPostsHub />} />
-
           <Route path=":dept" element={<DepartmentDetail />} />
-
           <Route path=":dept/add" element={<AddDepartmentPost />} />
-
           <Route path=":dept/manage" element={<DepartmentPostsDirectory />} />
-
           <Route path=":dept/edit/:id" element={<EditDepartmentPostPanel />} />
         </Route>
 
@@ -136,11 +125,8 @@ export default function AdminRoutes() {
         ============================================================ */}
 
         <Route path="ieeeapplication" element={<CommingSoonPage />} />
-
         <Route path="members" element={<CommingSoonPage />} />
-
         <Route path="directory" element={<CommingSoonPage />} />
-
         <Route path="drive" element={<CommingSoonPage />} />
 
         {/* ============================================================
