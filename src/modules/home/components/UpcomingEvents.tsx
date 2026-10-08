@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowUpRight, CalendarDays, MapPin, X, Sparkles, CalendarX, ZoomIn } from 'lucide-react';
 import { adminApi, type UpcomingEvent } from '@/services/adminApi';
 import ImageModal from '@/components/ImageModal';
+import fallbackEventsData from '@/data/upcomingEventsFallback.json';
 
 const formatDisplayDate = (dateStr?: string) => {
   if (!dateStr) return 'TBA';
@@ -65,16 +66,16 @@ export default function UpcomingEvents() {
 
         const res = await adminApi.getUpcomingEvents();
         if (isMounted) {
-          if (res.success && Array.isArray(res.posts)) {
+          if (res.success && Array.isArray(res.posts) && res.posts.length > 0) {
             setEvents(res.posts);
           } else {
-            setEvents([]);
+            setEvents((fallbackEventsData as UpcomingEvent[]) || []);
           }
         }
       } catch (err) {
-        console.error('Failed to load upcoming events from API:', err);
+        console.error('Failed to load upcoming events from API, using bundled events:', err);
         if (isMounted) {
-          setEvents([]);
+          setEvents((fallbackEventsData as UpcomingEvent[]) || []);
         }
       } finally {
         if (isMounted) {
