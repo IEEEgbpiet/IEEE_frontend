@@ -1,9 +1,8 @@
+
 import {
   ArrowUpRight,
-  BookOpen,
   CalendarDays,
   FlaskConical,
-  HandCoins,
   Presentation,
   Users,
 } from 'lucide-react';
@@ -37,15 +36,6 @@ const activities = [
     iconBg: 'bg-cyan-400/15',
   },
   {
-    title: 'Paper Publication',
-    description:
-      'Encouraging students to document their work and explore technical paper writing and publication.',
-    image: '/images/paperpublication.ieee.jpg',
-    icon: BookOpen,
-    iconColor: 'text-purple-400',
-    iconBg: 'bg-purple-400/15',
-  },
-  {
     title: 'Student Activities',
     description:
       'Collaborative activities that develop communication, leadership, creativity and technical confidence.',
@@ -54,21 +44,13 @@ const activities = [
     iconColor: 'text-emerald-400',
     iconBg: 'bg-emerald-400/15',
   },
-  {
-    title: 'Funding Support',
-    description:
-      'Supporting promising student initiatives and projects through guidance and available funding opportunities.',
-    image: '/images/funding.ieee.jpg',
-    icon: HandCoins,
-    iconColor: 'text-orange-400',
-    iconBg: 'bg-orange-400/15',
-  },
 ];
 
 export default function WhatWeDo() {
   return (
     <section className="relative overflow-hidden bg-black py-20 sm:py-24 lg:py-32">
       <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+
         {/* ================= HEADING ================= */}
         <div className="mb-12 text-center sm:mb-16 lg:mb-20">
           <h2 className="animate-[fadeUp_0.8s_ease-out] text-4xl font-black tracking-[-0.04em] text-white sm:text-5xl md:text-6xl lg:text-7xl">
@@ -130,7 +112,12 @@ export default function WhatWeDo() {
                   </p>
 
                   {/* ================= READ MORE ================= */}
-                  <button className="mt-4 inline-flex items-center gap-2 rounded-full bg-yellow-400 px-3.5 py-2 text-[10px] font-bold text-black shadow-[0_5px_20px_rgba(250,204,21,0.15)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-yellow-300 hover:shadow-[0_8px_25px_rgba(250,204,21,0.3)] sm:mt-5 sm:px-4 sm:py-2.5 sm:text-xs">
+                  <button
+                    onClick={() => {
+                      window.location.href = '/activities/events';
+                    }}
+                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-yellow-400 px-3.5 py-2 text-[10px] font-bold text-black shadow-[0_5px_20px_rgba(250,204,21,0.15)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-yellow-300 hover:shadow-[0_8px_25px_rgba(250,204,21,0.3)] sm:mt-5 sm:px-4 sm:py-2.5 sm:text-xs"
+                  >
                     Read More
                     <ArrowUpRight
                       size={14}
