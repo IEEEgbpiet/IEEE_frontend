@@ -4,35 +4,63 @@ import { ArrowLeft, ArrowRight, Maximize2, X } from 'lucide-react';
 // ============================================================
 // GALLERY DATA
 // ============================================================
-
 const galleryImages = [
   {
-    src: '/images/engineering.day.avif',
-    title: 'Engineering Day',
-    category: 'EVENT',
-  },
-  {
-    src: '/images/sih.jpg',
-    title: 'Smart India Hackathon',
-    category: 'HACKATHON',
-  },
-  {
-    src: '/images/ieee.day.jpg',
-    title: 'IEEE Day',
-    category: 'IEEE EVENT',
-  },
-  {
-    src: '/images/workshop.ieee.jpg',
-    title: 'Technical Workshop',
+    src: '/Gallery/CAD.jpeg',
+    title: 'CAD Workshop',
     category: 'WORKSHOP',
   },
   {
-    src: '/images/hero_engineering_lab.jpg',
-    title: 'Banner about ',
-    category: 'HERO SECTION',
+    src: '/Gallery/ChatbotDesingning.jpeg',
+    title: 'Chatbot Designing',
+    category: 'TECHNICAL EVENT',
+  },
+  {
+    src: '/Gallery/FIeldVisit.jpg',
+    title: 'Industrial Field Visit',
+    category: 'FIELD VISIT',
+  },
+  {
+    src: '/Gallery/Ideathon26.webp',
+    title: 'Ideathon 2026',
+    category: 'IDEATHON',
+  },
+  {
+    src: '/Gallery/IntroMeet.png',
+    title: 'IEEE Introductory Meet',
+    category: 'IEEE EVENT',
+  },
+  {
+    src: '/Gallery/Recruitment26.png',
+    title: 'IEEE Recruitment 2026',
+    category: 'RECRUITMENT',
+  },
+  {
+    src: '/Gallery/SIH26.webp',
+    title: 'Smart India Hackathon 2026',
+    category: 'HACKATHON',
+  },
+  {
+    src: '/Gallery/SpeakerSession.jpg',
+    title: 'Expert Speaker Session',
+    category: 'SPEAKER SESSION',
+  },
+  {
+    src: '/Gallery/SQLprice.webp',
+    title: 'SQL Prize Distribution',
+    category: 'TECHNICAL EVENT',
+  },
+  {
+    src: '/Gallery/SQLworkshop.webp',
+    title: 'SQL Workshop',
+    category: 'WORKSHOP',
+  },
+  {
+    src: '/Gallery/workshop.jpeg',
+    title: 'Technical Workshop',
+    category: 'WORKSHOP',
   },
 ];
-
 // Number of cards that will remain visible in the stack
 
 export default function Gallery() {

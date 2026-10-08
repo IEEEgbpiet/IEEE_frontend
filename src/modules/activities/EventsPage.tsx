@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Sparkles, Calendar, Layers, MapPin, ArrowUpRight, X, CalendarX, ZoomIn } from 'lucide-react';
 import { ActivityCard } from './components/ActivityCard';
 import ActivityDetailedCard from './components/ActivityDetailedCard';
@@ -80,8 +81,27 @@ const formatDisplayDate = (dateStr?: string) => {
 };
 
 export default function EventsPage() {
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+
   // View mode: 'department' or 'upcoming'
-  const [activeTab, setActiveTab] = useState<'department' | 'upcoming'>('department');
+  const [activeTab, setActiveTab] = useState<'department' | 'upcoming'>(() => {
+    const tabParam = new URLSearchParams(window.location.search).get('tab');
+    if (tabParam === 'upcoming' || window.location.hash === '#upcoming') {
+      return 'upcoming';
+    }
+    return 'department';
+  });
+
+  // Sync tab with URL search params or hash changes
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'upcoming' || location.hash === '#upcoming') {
+      setActiveTab('upcoming');
+    } else if (tab === 'department') {
+      setActiveTab('department');
+    }
+  }, [searchParams, location.hash]);
 
   // Department posts state (strictly loaded from backend API)
   const [departmentActivities, setDepartmentActivities] = useState<Activity[]>([]);
