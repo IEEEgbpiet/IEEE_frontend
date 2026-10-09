@@ -5,6 +5,7 @@ import { ActivityCard } from './components/ActivityCard';
 import ActivityDetailedCard from './components/ActivityDetailedCard';
 import ImageModal from '@/components/ImageModal';
 import { adminApi, type DepartmentPost, type UpcomingEvent } from '@/services/adminApi';
+import fallbackEventsData from '@/data/upcomingEventsFallback.json';
 
 export interface Activity {
   id: string;
@@ -172,16 +173,16 @@ export default function EventsPage() {
         setLoadingUpcoming(true);
         const res = await adminApi.getUpcomingEvents();
         if (isMounted) {
-          if (res.success && Array.isArray(res.posts)) {
+          if (res.success && Array.isArray(res.posts) && res.posts.length > 0) {
             setUpcomingEvents(res.posts);
           } else {
-            setUpcomingEvents([]);
+            setUpcomingEvents((fallbackEventsData as UpcomingEvent[]) || []);
           }
         }
       } catch (err) {
-        console.error('Could not fetch upcoming events in EventsPage:', err);
+        console.error('Could not fetch upcoming events in EventsPage, using bundled events:', err);
         if (isMounted) {
-          setUpcomingEvents([]);
+          setUpcomingEvents((fallbackEventsData as UpcomingEvent[]) || []);
         }
       } finally {
         if (isMounted) {

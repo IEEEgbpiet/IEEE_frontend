@@ -212,6 +212,28 @@ export interface SupportTicket {
   updatedAt?: string;
 }
 
+// 9. Student Directory Module
+export interface StudentDirectoryRecord {
+  _id: string;
+  instituteId: string;
+  name: string;
+  branch: string;
+  year: number;
+  batchYear: number;
+  email?: string;
+  phone?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER' | string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface StudentDirectoryResponse {
+  success: boolean;
+  count: number;
+  data: StudentDirectoryRecord[];
+  message?: string;
+}
+
 // ==========================================
 // Admin API Methods
 // ==========================================
@@ -495,6 +517,14 @@ export const adminApi = {
       '/api/v1/registration/getAll',
       {},
       true,
+    ),
+
+  // 9. Student Directory Module
+  getStudentDirectory: () =>
+    requestJson<StudentDirectoryResponse>(
+      '/api/v1/directory/getAll',
+      {},
+      true, // Authentication: None (Public)
     ),
 };
 

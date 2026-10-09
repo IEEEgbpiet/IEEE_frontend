@@ -1,0 +1,162 @@
+[
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791464667/ieee-upcoming-events/fuxyi3vqtfnx5vxpfpce.jpg",
+      "publicId": "ieee-upcoming-events/fuxyi3vqtfnx5vxpfpce"
+    },
+    "_id": "6ac794db8e2ace673ccf8b37",
+    "postId": "IEEE100878",
+    "eventName": "Timeline",
+    "title": "TImeline",
+    "date": "2026-10-10T00:00:00.000Z",
+    "lastDate": "2026-10-09T00:00:00.000Z",
+    "overview": "Timeline",
+    "createdAt": "2026-10-08T13:04:27.724Z",
+    "updatedAt": "2026-10-08T13:04:27.724Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791464629/ieee-upcoming-events/xrrb6oa9669z37gi3ljy.jpg",
+      "publicId": "ieee-upcoming-events/xrrb6oa9669z37gi3ljy"
+    },
+    "_id": "6ac794b68e2ace673ccf8b36",
+    "postId": "IEEE100805",
+    "eventName": "Event Timeline",
+    "title": "TImeline",
+    "date": "2026-10-09T00:00:00.000Z",
+    "lastDate": "2026-10-08T00:00:00.000Z",
+    "overview": "Timeline",
+    "createdAt": "2026-10-08T13:03:50.516Z",
+    "updatedAt": "2026-10-08T13:03:50.516Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791440970/ieee-upcoming-events/iat2hd7twr7xryrvd2ua.png",
+      "publicId": "ieee-upcoming-events/iat2hd7twr7xryrvd2ua"
+    },
+    "_id": "6ac7384b1a4e479db6c578f0",
+    "postId": "IEEE100853",
+    "eventName": "Precision Run",
+    "title": "Test Your Precision and Focus",
+    "date": "2026-10-11T00:00:00.000Z",
+    "lastDate": "2026-10-10T00:00:00.000Z",
+    "overview": "Get ready for Precision Run, an engaging challenge designed to test your accuracy, focus, coordination, and decision-making skills.\r\n\r\nParticipants will compete in a challenging and exciting environment where precision and consistency are the keys to success.\r\n\r\nStep up, stay focused, and put your skills to the test.\r\n\r\n📅 Date: 11 October 2026\r\n📍 Venue: Library\r\n⏰Time: 4:00-5:30 PM",
+    "createdAt": "2026-10-08T06:29:31.049Z",
+    "updatedAt": "2026-10-08T06:29:31.049Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791440873/ieee-upcoming-events/oilitcogxzlzixgrdp5v.png",
+      "publicId": "ieee-upcoming-events/oilitcogxzlzixgrdp5v"
+    },
+    "_id": "6ac737ea1a4e479db6c578ef",
+    "postId": "IEEE100858",
+    "eventName": "GenAI Building Challenge",
+    "title": "Build. Innovate. Create with GenAI.",
+    "date": "2026-10-11T00:00:00.000Z",
+    "lastDate": "2026-10-10T00:00:00.000Z",
+    "overview": "Put your Generative AI skills to the test in the GenAI Building Challenge.\r\n\r\nParticipants will have the opportunity to explore Generative AI tools, develop creative solutions, and build innovative applications around real-world problems.\r\n\r\nBring your ideas, experiment with AI, and turn your concepts into working solutions.\r\n\r\n📅 Date: 11 October 2026\r\n📍 Venue: CSE Seminar Hall\r\n⏰Time: 2:00 - 4:00 PM",
+    "createdAt": "2026-10-08T06:27:54.603Z",
+    "updatedAt": "2026-10-08T06:27:54.603Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791440735/ieee-upcoming-events/xplpgcaglsqc6rx2y8fu.png",
+      "publicId": "ieee-upcoming-events/xplpgcaglsqc6rx2y8fu"
+    },
+    "_id": "6ac737601a4e479db6c578ee",
+    "postId": "IEEE100881",
+    "eventName": "OpenCV Filter Showcase",
+    "title": "Explore Computer Vision with OpenCV",
+    "date": "2026-10-11T00:00:00.000Z",
+    "lastDate": "2026-10-10T00:00:00.000Z",
+    "overview": "Explore the creative side of computer vision through the OpenCV Filter Showcase.\r\n\r\nParticipants will get an opportunity to experiment with image processing and computer vision concepts by creating and showcasing interesting visual filters using OpenCV.\r\n\r\nDiscover how technology can transform ordinary images into engaging visual experiences.\r\n\r\n📅 Date: 11 October 2026\r\n📍 Venue: CSE Seminar Hall\r\n⏰Time: 9:00 - 10:30 AM",
+    "createdAt": "2026-10-08T06:25:36.326Z",
+    "updatedAt": "2026-10-08T06:25:36.326Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791440626/ieee-upcoming-events/rp1zu3zl7l1ydoy9szuc.png",
+      "publicId": "ieee-upcoming-events/rp1zu3zl7l1ydoy9szuc"
+    },
+    "_id": "6ac736f21a4e479db6c578ed",
+    "postId": "IEEE100889",
+    "eventName": "Sociothon",
+    "title": "Innovate for Social Impact",
+    "date": "2026-10-10T00:00:00.000Z",
+    "lastDate": "2026-10-09T00:00:00.000Z",
+    "overview": "Sociothon is an opportunity to think beyond technology and develop innovative ideas that address real-world social challenges.\r\n\r\nParticipants will collaborate, brainstorm solutions, and work on ideas focused on creating meaningful social impact.\r\n\r\nJoin us to turn problems into possibilities and use creativity, technology, and teamwork to build solutions for a better society.\r\n\r\n📅 Date: 10 October 2026\r\n📍 Venue: BT Seminar Hall\r\n⏰Time: 2:00 - 5:30 PM",
+    "createdAt": "2026-10-08T06:23:46.939Z",
+    "updatedAt": "2026-10-08T06:23:46.939Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791440505/ieee-upcoming-events/mg3nqvluvlyqegm6gxvs.png",
+      "publicId": "ieee-upcoming-events/mg3nqvluvlyqegm6gxvs"
+    },
+    "_id": "6ac7367a1a4e479db6c578ec",
+    "postId": "IEEE100851",
+    "eventName": "Poster Making Competition",
+    "title": "Create. Communicate. Inspire.",
+    "date": "2026-10-10T00:00:00.000Z",
+    "lastDate": "2026-10-09T00:00:00.000Z",
+    "overview": "Put your creativity and visual communication skills to the test in our Poster Making event.\r\n\r\nParticipants will create visually engaging posters based on the given theme while demonstrating originality, creativity, and effective communication through design.\r\n\r\nWhether you enjoy digital design or creative artwork, this is your chance to turn your ideas into an impactful visual story.\r\n\r\n📅 Date: 10 October 2026\r\n📍 Venue: CSE Seminar Hall\r\n⏰Time:11:00AM-1:00PM",
+    "createdAt": "2026-10-08T06:21:46.451Z",
+    "updatedAt": "2026-10-08T06:21:46.451Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791440386/ieee-upcoming-events/jadlu5quallic2pmvsyt.png",
+      "publicId": "ieee-upcoming-events/jadlu5quallic2pmvsyt"
+    },
+    "_id": "6ac736031a4e479db6c578eb",
+    "postId": "IEEE100821",
+    "eventName": "UI Design Showcase",
+    "title": "Design. Create. Innovate.",
+    "date": "2026-10-10T00:00:00.000Z",
+    "lastDate": "2026-10-09T00:00:00.000Z",
+    "overview": "Unleash your creativity at the UI Design Showcase and present your ideas through innovative and engaging user interface designs.\r\n\r\nParticipants will get an opportunity to showcase their design skills, explore creative approaches to UI/UX, and demonstrate how thoughtful design can improve digital experiences.\r\n\r\nBring your ideas, creativity, and design perspective to the showcase.\r\n\r\n📅 Date: 10 October 2026\r\n📍 Venue: CSE Seminar Hall\r\n⏰Time: 9:00 - 10:30 AM",
+    "createdAt": "2026-10-08T06:19:47.315Z",
+    "updatedAt": "2026-10-08T06:19:47.315Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791440251/ieee-upcoming-events/fwv0frfxaze4u3mhmlsu.png",
+      "publicId": "ieee-upcoming-events/fwv0frfxaze4u3mhmlsu"
+    },
+    "_id": "6ac7357c1a4e479db6c578ea",
+    "postId": "IEEE100828",
+    "eventName": "IEEE Introductory Workshop",
+    "title": "Connect, Learn & Explore IEEE",
+    "date": "2026-10-09T00:00:00.000Z",
+    "lastDate": "2026-10-09T00:00:00.000Z",
+    "overview": "Join us for the IEEE Introductory Workshop and discover the opportunities, activities, and benefits of being part of IEEE.\r\n\r\nThis beginner-friendly session will introduce participants to IEEE, its student branch activities, and the various opportunities available for learning, networking, innovation, and professional development.\r\n\r\nCome and explore how IEEE can help you connect with like-minded students, develop new skills, and turn your ideas into impactful projects.\r\n\r\n📅 Date: 9 October 2026\r\n📍 Venue: M. G. Auditorium\r\n ⏰Time: 2:30pm onwards",
+    "createdAt": "2026-10-08T06:17:32.365Z",
+    "updatedAt": "2026-10-08T06:17:32.365Z",
+    "__v": 0
+  },
+  {
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791030439/ieee-upcoming-events/ayi3xpx7iwmx9bew2ldp.jpg",
+      "publicId": "ieee-upcoming-events/ayi3xpx7iwmx9bew2ldp"
+    },
+    "_id": "6ac0f4a7058ec18805187e16",
+    "postId": "IEEE100312",
+    "eventName": "IEEE DAY 2026 — RAG-BASED CHATBOT WORKSHOP",
+    "title": "RAG-BASED CHATBOT WORKSHOP",
+    "date": "2026-10-11T00:00:00.000Z",
+    "lastDate": "2026-10-09T00:00:00.000Z",
+    "overview": "Want to understand how AI chatbots can retrieve information and generate context-aware responses?\r\n\r\nJoin our hands-on RAG-Based Chatbot Workshop and explore Retrieval-Augmented Generation (RAG), knowledge bases, and the fundamentals of building AI-powered chatbots.\r\n\r\n📅 Date: 11 October 2026\r\n⏰ Time: 10:45 AM – 1:00 PM\r\n📍 Venue: CSE Seminar Hall\r\n\r\nLearn how relevant information can be retrieved from a knowledge base and used to generate accurate, context-aware responses.",
+    "createdAt": "2026-10-03T12:27:19.757Z",
+    "updatedAt": "2026-10-03T12:27:19.757Z",
+    "__v": 0
+  }
+]

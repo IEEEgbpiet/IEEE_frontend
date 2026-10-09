@@ -40,6 +40,9 @@ import ForgotPassword from './pages/authentication/ForgotPassword';
 // Registration
 import AdminRegistrationPage from './pages/registration/page';
 
+// Student Directory
+import DirectoryPage from './pages/Directory/page';
+
 // Shared
 import CommingSoonPage from '../../pages/ComingSoonpage';
 import { PageNotFound } from './pages/pageNotFound';
@@ -121,12 +124,18 @@ export default function AdminRoutes() {
         <Route path="registration" element={<AdminRegistrationPage />} />
 
         {/* ============================================================
+            STUDENT DIRECTORY
+        ============================================================ */}
+
+        <Route path="directory" element={<DirectoryPage />} />
+        <Route path="Directory" element={<DirectoryPage />} />
+
+        {/* ============================================================
             COMING SOON
         ============================================================ */}
 
         <Route path="ieeeapplication" element={<CommingSoonPage />} />
         <Route path="members" element={<CommingSoonPage />} />
-        <Route path="directory" element={<CommingSoonPage />} />
         <Route path="drive" element={<CommingSoonPage />} />
 
         {/* ============================================================
