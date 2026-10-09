@@ -12,7 +12,7 @@ const activities = [
     title: 'College Events',
     description:
       'Technical and professional events that bring students together to learn, compete and connect.',
-    image: '/images/events.ieee.jpg',
+    image: '/Home/CollegeEvents.webp',
     icon: CalendarDays,
     iconColor: 'text-blue-400',
     iconBg: 'bg-blue-400/15',
@@ -21,7 +21,7 @@ const activities = [
     title: 'Workshops',
     description:
       'Hands-on sessions focused on practical skills, emerging technologies and real-world applications.',
-    image: '/images/workshop.ieee.jpg',
+    image: '/Home/workshop.jpeg',
     icon: Presentation,
     iconColor: 'text-yellow-400',
     iconBg: 'bg-yellow-400/15',
@@ -30,7 +30,7 @@ const activities = [
     title: 'Research Support',
     description:
       'Guidance and opportunities for students interested in research, experimentation and technical exploration.',
-    image: '/images/researchsupport.ieee.jpg',
+    image: '/Home/researchSupport.webp',
     icon: FlaskConical,
     iconColor: 'text-cyan-400',
     iconBg: 'bg-cyan-400/15',
@@ -39,7 +39,7 @@ const activities = [
     title: 'Student Activities',
     description:
       'Collaborative activities that develop communication, leadership, creativity and technical confidence.',
-    image: '/images/activies.ieee.jpg',
+    image: '/Home/Activities.webp',
     icon: Users,
     iconColor: 'text-emerald-400',
     iconBg: 'bg-emerald-400/15',
