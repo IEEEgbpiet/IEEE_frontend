@@ -5,7 +5,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ScrollToTop from "@/components/common/ScrollToTop";
 import Loader from "@/components/common/Loader";
-import UpcomingEventsPopup from "@/components/common/UpcomingEventsPopup";
 
 export default function MainLayout() {
   const [loading, setLoading] = useState(true);
@@ -23,7 +22,6 @@ export default function MainLayout() {
 
       <Footer />
       <ScrollToTop />
-      <UpcomingEventsPopup isParentLoading={loading} />
     </div>
   );
 }
