@@ -211,7 +211,7 @@ export const teamMembers: TeamMember[] = [
   },
   {
     name: 'Rohit Thapliyal',
-    role: 'Creative Media Head',
+    role: 'Secretary',
     department: 'IEEE Student Branch',
     photo: '/images/rohit.thapliyal.jpeg',
     priority: 5,
