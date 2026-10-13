@@ -22,7 +22,6 @@ import {
 
 import {
   adminApi,
-  isItemVisible,
   type CertificateApplication,
 } from "@/services/adminApi";
 import { PREDEFINED_EVENTS } from "@/data/constants";
