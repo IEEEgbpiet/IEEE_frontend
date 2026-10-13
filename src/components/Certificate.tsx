@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Link } from "react-router-dom";
 
@@ -22,9 +22,9 @@ import {
 
 import {
   adminApi,
-  isItemVisible,
   type CertificateApplication,
 } from "@/services/adminApi";
+import { PREDEFINED_EVENTS } from "@/data/constants";
 
 const BRANCH_OPTIONS = [
   {
@@ -58,15 +58,15 @@ const BRANCH_OPTIONS = [
 ];
 
 export default function CertificateForm() {
+  const defaultEvent = PREDEFINED_EVENTS[0];
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     branch: "CSE",
-    event: "",
-    date: "",
+    event: defaultEvent.name,
+    date: defaultEvent.date,
   });
 
-  const [recentEvents, setRecentEvents] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -77,56 +77,29 @@ export default function CertificateForm() {
 
   const [copiedId, setCopiedId] = useState(false);
 
-  // Fetch recent event suggestions
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchEventSuggestions = async () => {
-      try {
-        const res = await adminApi.getUpcomingEvents();
-
-        if (mounted && res?.posts && Array.isArray(res.posts)) {
-          const names = Array.from(
-            new Set(
-              res.posts
-                .filter((p) => isItemVisible(p) && p.visibilityStatus !== false)
-                .map((p) => p.eventName || p.title)
-                .filter(Boolean)
-            )
-          );
-
-          if (names.length > 0) {
-            setRecentEvents(names);
-          }
-        }
-      } catch {
-        // Silently ignore if endpoint is unavailable
-      }
-    };
-
-    void fetchEventSuggestions();
-
-    const handleEventsUpdated = () => {
-      void fetchEventSuggestions();
-    };
-
-    window.addEventListener('ieee:events-changed', handleEventsUpdated);
-
-    return () => {
-      mounted = false;
-      window.removeEventListener('ieee:events-changed', handleEventsUpdated);
-    };
-  }, []);
-
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "event") {
+      const selectedEvent = PREDEFINED_EVENTS.find(
+        (event) => event.name === value
+      );
+
+      if (selectedEvent) {
+        setFormData((prev) => ({
+          ...prev,
+          event: selectedEvent.name,
+          date: selectedEvent.date,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
 
     if (error) {
       setError("");
@@ -205,8 +178,8 @@ export default function CertificateForm() {
       name: "",
       email: "",
       branch: "CSE",
-      event: "",
-      date: "",
+      event: defaultEvent.name,
+      date: defaultEvent.date,
     });
 
     setSuccessData(null);
@@ -481,37 +454,27 @@ export default function CertificateForm() {
                     <span className="text-rose-400">*</span>
                   </span>
 
-                  {recentEvents.length > 0 && (
-                    <span className="text-[10px] font-normal lowercase text-slate-400">
-                      (suggestions enabled)
-                    </span>
-                  )}
                 </label>
 
-                <input
+                <select
                   id="event"
                   name="event"
-                  list="events-datalist"
-                  type="text"
                   value={formData.event}
                   onChange={handleChange}
-                  placeholder="e.g. National Hackathon 2026, Spandan, etc."
                   required
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
-                />
-
-                <datalist id="events-datalist">
-                  {recentEvents.map((evt) => (
-                    <option key={evt} value={evt} />
+                  className="w-full rounded-xl border border-slate-700/80 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
+                >
+                  {PREDEFINED_EVENTS.map((event) => (
+                    <option
+                      key={event.id}
+                      value={event.name}
+                      className="bg-slate-900 text-white"
+                    >
+                      {event.name}
+                    </option>
                   ))}
-
-                  <option value="National Hackathon 2026" />
-                  <option value="KiCad PCB Design Workshop" />
-                  <option value="RoboQuest Competition" />
-                  <option value="Spandan Annual Tech Fest" />
-                  <option value="Goonj Technical Symposium" />
-                </datalist>
+                </select>
               </div>
 
               {/* Event Date */}
@@ -529,8 +492,8 @@ export default function CertificateForm() {
                   name="date"
                   type="date"
                   value={formData.date}
-                  onChange={handleChange}
                   required
+                  readOnly
                   disabled={isSubmitting}
                   className="w-full rounded-xl border border-slate-700/80 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 [color-scheme:dark]"
                 />
