@@ -22,6 +22,7 @@ import {
 
 import {
   adminApi,
+  isItemVisible,
   type CertificateApplication,
 } from "@/services/adminApi";
 
@@ -88,6 +89,7 @@ export default function CertificateForm() {
           const names = Array.from(
             new Set(
               res.posts
+                .filter((p) => isItemVisible(p) && p.visibilityStatus !== false)
                 .map((p) => p.eventName || p.title)
                 .filter(Boolean)
             )
@@ -104,8 +106,15 @@ export default function CertificateForm() {
 
     void fetchEventSuggestions();
 
+    const handleEventsUpdated = () => {
+      void fetchEventSuggestions();
+    };
+
+    window.addEventListener('ieee:events-changed', handleEventsUpdated);
+
     return () => {
       mounted = false;
+      window.removeEventListener('ieee:events-changed', handleEventsUpdated);
     };
   }, []);
 

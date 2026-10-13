@@ -4,7 +4,7 @@ import { Sparkles, Calendar, Layers, MapPin, ArrowUpRight, X, CalendarX, ZoomIn 
 import { ActivityCard } from './components/ActivityCard';
 import ActivityDetailedCard from './components/ActivityDetailedCard';
 import ImageModal from '@/components/ImageModal';
-import { adminApi, type DepartmentPost, type UpcomingEvent } from '@/services/adminApi';
+import { adminApi, isItemVisible, type DepartmentPost, type UpcomingEvent } from '@/services/adminApi';
 import fallbackEventsData from '@/data/upcomingEventsFallback.json';
 
 export interface Activity {
@@ -139,7 +139,8 @@ export default function EventsPage() {
         const res = await adminApi.getDepartmentPosts();
         if (isMounted) {
           if (res.success && Array.isArray(res.posts)) {
-            const apiFormatted = res.posts.map(formatDepartmentPost);
+            const visiblePosts = res.posts.filter((p) => isItemVisible(p) && p.visibilityStatus !== false);
+            const apiFormatted = visiblePosts.map(formatDepartmentPost);
             setDepartmentActivities(apiFormatted);
           } else {
             setDepartmentActivities([]);
@@ -159,8 +160,15 @@ export default function EventsPage() {
 
     fetchDepartmentPosts();
 
+    const handleDeptUpdated = () => {
+      void fetchDepartmentPosts();
+    };
+
+    window.addEventListener('ieee:department-posts-changed', handleDeptUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('ieee:department-posts-changed', handleDeptUpdated);
     };
   }, []);
 
@@ -173,16 +181,20 @@ export default function EventsPage() {
         setLoadingUpcoming(true);
         const res = await adminApi.getUpcomingEvents();
         if (isMounted) {
-          if (res.success && Array.isArray(res.posts) && res.posts.length > 0) {
-            setUpcomingEvents(res.posts);
+          if (res.success && Array.isArray(res.posts)) {
+            const visibleEvents = res.posts.filter((evt) => isItemVisible(evt) && evt.visibilityStatus !== false);
+            setUpcomingEvents(visibleEvents);
           } else {
-            setUpcomingEvents((fallbackEventsData as UpcomingEvent[]) || []);
+            setUpcomingEvents([]);
           }
         }
       } catch (err) {
         console.error('Could not fetch upcoming events in EventsPage, using bundled events:', err);
         if (isMounted) {
-          setUpcomingEvents((fallbackEventsData as UpcomingEvent[]) || []);
+          const visibleFallback = ((fallbackEventsData as UpcomingEvent[]) || []).filter(
+            (evt) => isItemVisible(evt) && evt.visibilityStatus !== false
+          );
+          setUpcomingEvents(visibleFallback);
         }
       } finally {
         if (isMounted) {
@@ -193,8 +205,15 @@ export default function EventsPage() {
 
     fetchUpcoming();
 
+    const handleEventsUpdated = () => {
+      void fetchUpcoming();
+    };
+
+    window.addEventListener('ieee:events-changed', handleEventsUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('ieee:events-changed', handleEventsUpdated);
     };
   }, []);
 

@@ -78,7 +78,18 @@ export default function EditUpcomingDirectory() {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+
+    const handleEventsChanged = () => {
+      if (!togglingId && !deletingId) {
+        void fetchEvents();
+      }
+    };
+
+    window.addEventListener('ieee:events-changed', handleEventsChanged);
+    return () => {
+      window.removeEventListener('ieee:events-changed', handleEventsChanged);
+    };
+  }, [togglingId, deletingId]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to permanently delete this event post from the remote database?")) {
