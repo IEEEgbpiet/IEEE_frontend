@@ -117,6 +117,7 @@ export interface UpcomingEvent {
   venue?: string;
   overview: string;
   image?: UpcomingEventImage | string;
+  visibilityStatus?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -150,6 +151,7 @@ export interface DepartmentPost {
   keyDiscussion?: string[] | string;
   studentsPresent?: string[] | string;
   image?: DepartmentPostImage | string;
+  visibilityStatus?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -421,6 +423,20 @@ export const adminApi = {
   getUpcomingEvents: () =>
     requestJson<UpcomingEventsResponse>('/api/v1/upcomingevents/all', {}, true),
 
+  /** Admin: fetch ALL upcoming events including hidden ones */
+  getUpcomingEventsAdmin: () =>
+    requestJson<UpcomingEventsResponse>('/api/v1/upcomingevents/all?admin=true'),
+
+  /** Toggle visibility of an upcoming event */
+  toggleUpcomingEventVisibility: (id: string, visibilityStatus: boolean) =>
+    requestJson<{ success: boolean; message: string }>(
+      `/api/v1/upcomingevents/visibility/${id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ visibilityStatus }),
+      },
+    ),
+
   getUpcomingEventById: (id: string) =>
     requestJson<{ success: boolean; post?: UpcomingEvent }>(
       `/api/v1/upcomingevents/post/${id}`,
@@ -463,6 +479,28 @@ export const adminApi = {
       posts?: DepartmentPost[];
     }>(`/api/v1/department/all${query}`, {}, true);
   },
+
+  /** Admin: fetch ALL department posts including hidden ones */
+  getDepartmentPostsAdmin: (dep?: string) => {
+    const params = new URLSearchParams();
+    if (dep) params.set('dep', dep);
+    params.set('admin', 'true');
+    return requestJson<{
+      success: boolean;
+      count?: number;
+      posts?: DepartmentPost[];
+    }>(`/api/v1/department/all?${params.toString()}`);
+  },
+
+  /** Toggle visibility of a department post */
+  toggleDepartmentPostVisibility: (id: string, visibilityStatus: boolean) =>
+    requestJson<{ success: boolean; message: string }>(
+      `/api/v1/department/visibility/${id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ visibilityStatus }),
+      },
+    ),
 
   getDepartmentPostById: (id: string) =>
     requestJson<{ success: boolean; post?: DepartmentPost }>(
