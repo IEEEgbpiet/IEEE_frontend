@@ -6,7 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { adminApi, type UpcomingEvent } from '@/services/adminApi';
+import { adminApi, isItemVisible, type UpcomingEvent } from '@/services/adminApi';
 import ImageModal from '@/components/ImageModal';
 import fallbackEventsData from '@/data/upcomingEventsFallback.json';
 
@@ -30,7 +30,9 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
   // Initialize with all upcoming events so all events are immediately loaded
   const [events, setEvents] = useState<UpcomingEvent[]>(() => {
     return Array.isArray(fallbackEventsData) && fallbackEventsData.length > 0
-      ? (fallbackEventsData as UpcomingEvent[])
+      ? (fallbackEventsData as UpcomingEvent[]).filter(
+          (e) => isItemVisible(e) && e.visibilityStatus !== false,
+        )
       : [];
   });
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -69,8 +71,9 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
     const fetchEvents = async () => {
       try {
         const res = await adminApi.getUpcomingEvents();
-        if (isMounted && res.success && Array.isArray(res.posts) && res.posts.length > 0) {
-          setEvents(res.posts);
+        if (isMounted && res.success && Array.isArray(res.posts)) {
+          const visible = res.posts.filter((e) => isItemVisible(e) && e.visibilityStatus !== false);
+          setEvents(visible);
           return;
         }
       } catch (err) {
@@ -80,12 +83,14 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
       // If local API failed or was empty, query live Render backend to get all events
       try {
         const fallbackRes = await fetch(
-          'https://ieee-backend-7z25.onrender.com/api/v1/upcomingevents/all'
+          'https://ieee-backend-7z25.onrender.com/api/v1/upcomingevents/all',
+          { cache: 'no-store' }
         );
         if (fallbackRes.ok) {
           const data = await fallbackRes.json();
-          if (isMounted && data.success && Array.isArray(data.posts) && data.posts.length > 0) {
-            setEvents(data.posts);
+          if (isMounted && data.success && Array.isArray(data.posts)) {
+            const visible = data.posts.filter((e: any) => isItemVisible(e) && e.visibilityStatus !== false);
+            setEvents(visible);
             return;
           }
         }
@@ -96,8 +101,15 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
 
     fetchEvents();
 
+    const handleEventsUpdated = () => {
+      void fetchEvents();
+    };
+
+    window.addEventListener('ieee:events-changed', handleEventsUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('ieee:events-changed', handleEventsUpdated);
     };
   }, []);
 

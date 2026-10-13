@@ -121,6 +121,18 @@ export default function DashboardPage() {
     };
 
     void loadDashboard();
+
+    const handleDataChanged = () => {
+      void loadDashboard();
+    };
+
+    window.addEventListener('ieee:events-changed', handleDataChanged);
+    window.addEventListener('ieee:department-posts-changed', handleDataChanged);
+
+    return () => {
+      window.removeEventListener('ieee:events-changed', handleDataChanged);
+      window.removeEventListener('ieee:department-posts-changed', handleDataChanged);
+    };
   }, []);
 
   const deptStats = useMemo(

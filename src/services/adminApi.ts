@@ -46,12 +46,35 @@ export const removeTokenCookie = () => {
 // Base Request Handler
 // ==========================================
 
+export const isItemVisible = (
+  item?: { visibilityStatus?: boolean | string | number | null } | null
+): boolean => {
+  if (!item) return false;
+  // An item is hidden if visibilityStatus is strictly false, 'false', or 0
+  if (
+    item.visibilityStatus === false ||
+    item.visibilityStatus === 'false' ||
+    item.visibilityStatus === 0
+  ) {
+    return false;
+  }
+  return true;
+};
+
 export async function requestJson<T>(endpoint: string, options: RequestInit = {}, skipAuth = false): Promise<T> {
   const headers = new Headers(options.headers ?? {});
   const hasBody = typeof options.body !== 'undefined';
 
   if (hasBody && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  // Prevent browser caching for fresh data across views
+  if (!headers.has('Cache-Control')) {
+    headers.set('Cache-Control', 'no-cache');
+  }
+  if (!headers.has('Pragma')) {
+    headers.set('Pragma', 'no-cache');
   }
 
   if (!skipAuth) {
@@ -66,6 +89,7 @@ export async function requestJson<T>(endpoint: string, options: RequestInit = {}
   let response: Response;
   try {
     response = await fetch(buildApiUrl(endpoint), {
+      cache: options.cache ?? 'no-store',
       ...options,
       headers,
     });
@@ -117,6 +141,7 @@ export interface UpcomingEvent {
   venue?: string;
   overview: string;
   image?: UpcomingEventImage | string;
+  visibilityStatus?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -165,6 +190,7 @@ export interface DepartmentPost {
   keyDiscussion?: string[] | string;
   studentsPresent?: string[] | string;
   image?: DepartmentPostImage | string;
+  visibilityStatus?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -313,15 +339,15 @@ export const adminApi = {
       true,
     ),
 
-  // 2. Dashboard Analytics
+  // 2. Dashboard Analytics (admin=true to retrieve all counts and events)
   getDashboardDepartmentCounts: () =>
     requestJson<{ success: boolean; data: Record<string, number> }>(
-      '/api/v1/dashboard/departmentposts/getall',
+      '/api/v1/dashboard/departmentposts/getall?admin=true',
     ),
 
   getDashboardEvents: () =>
-    requestJson<{ success: boolean; data: Array<{ eventName: string; lastDate: string }> }>(
-      '/api/v1/dashboard/events/getall',
+    requestJson<{ success: boolean; data: Array<{ eventName: string; lastDate: string; visibilityStatus?: boolean }> }>(
+      '/api/v1/dashboard/events/getall?admin=true',
     ),
 
   getDashboardSupportSummary: () =>
@@ -433,8 +459,39 @@ export const adminApi = {
     ),
 
   // 5. Upcoming Events Module (Direct MongoDB Integration per Apis.pdf)
-  getUpcomingEvents: () =>
-    requestJson<UpcomingEventsResponse>('/api/v1/upcomingevents/all', {}, true),
+  getUpcomingEvents: async () => {
+    const res = await requestJson<UpcomingEventsResponse>('/api/v1/upcomingevents/all', {}, true);
+    if (res && Array.isArray(res.posts)) {
+      return {
+        ...res,
+        posts: res.posts.filter(isItemVisible),
+      };
+    }
+    return res;
+  },
+
+  /** Admin: fetch ALL upcoming events including hidden ones */
+  getUpcomingEventsAdmin: () =>
+    requestJson<UpcomingEventsResponse>('/api/v1/upcomingevents/all?admin=true'),
+
+  /** Toggle visibility of an upcoming event */
+  toggleUpcomingEventVisibility: async (id: string, visibilityStatus: boolean) => {
+    const res = await requestJson<{ success: boolean; message: string }>(
+      `/api/v1/upcomingevents/visibility/${id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ visibilityStatus }),
+      },
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('ieee:events-changed', {
+          detail: { id, visibilityStatus, timestamp: Date.now() },
+        }),
+      );
+    }
+    return res;
+  },
 
   getUpcomingEventById: (id: string) =>
     requestJson<{ success: boolean; post?: UpcomingEvent }>(
@@ -443,31 +500,46 @@ export const adminApi = {
       true,
     ),
 
-  createUpcomingEvent: (formData: FormData) =>
-    requestJson<{ success: boolean; message: string; post?: UpcomingEvent }>(
+  createUpcomingEvent: async (formData: FormData) => {
+    const res = await requestJson<{ success: boolean; message: string; post?: UpcomingEvent }>(
       '/api/v1/upcomingevents/create',
       {
         method: 'POST',
         body: formData,
       },
-    ),
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ieee:events-changed', { detail: { timestamp: Date.now() } }));
+    }
+    return res;
+  },
 
-  updateUpcomingEvent: (id: string, formData: FormData | Record<string, unknown>) =>
-    requestJson<{ success: boolean; message: string; post?: Partial<UpcomingEvent> }>(
+  updateUpcomingEvent: async (id: string, formData: FormData | Record<string, unknown>) => {
+    const res = await requestJson<{ success: boolean; message: string; post?: Partial<UpcomingEvent> }>(
       `/api/v1/upcomingevents/edit/${id}`,
       {
         method: 'PATCH',
         body: formData instanceof FormData ? formData : JSON.stringify(formData),
       },
-    ),
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ieee:events-changed', { detail: { id, timestamp: Date.now() } }));
+    }
+    return res;
+  },
 
-  deleteUpcomingEvent: (id: string) =>
-    requestJson<{ success: boolean; message: string }>(
+  deleteUpcomingEvent: async (id: string) => {
+    const res = await requestJson<{ success: boolean; message: string }>(
       `/api/v1/upcomingevents/delete/${id}`,
       {
         method: 'DELETE',
       },
-    ),
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ieee:events-changed', { detail: { id, timestamp: Date.now() } }));
+    }
+    return res;
+  },
 
   // 5.1 Announcements
   getAnnouncements: () =>
@@ -510,13 +582,51 @@ export const adminApi = {
     }),
 
   // 6. Department Posts
-  getDepartmentPosts: (dep?: string) => {
+  getDepartmentPosts: async (dep?: string) => {
     const query = dep ? `?dep=${encodeURIComponent(dep)}` : '';
-    return requestJson<{
+    const res = await requestJson<{
       success: boolean;
       count?: number;
       posts?: DepartmentPost[];
     }>(`/api/v1/department/all${query}`, {}, true);
+    if (res && Array.isArray(res.posts)) {
+      return {
+        ...res,
+        posts: res.posts.filter(isItemVisible),
+      };
+    }
+    return res;
+  },
+
+  /** Admin: fetch ALL department posts including hidden ones */
+  getDepartmentPostsAdmin: (dep?: string) => {
+    const params = new URLSearchParams();
+    if (dep) params.set('dep', dep);
+    params.set('admin', 'true');
+    return requestJson<{
+      success: boolean;
+      count?: number;
+      posts?: DepartmentPost[];
+    }>(`/api/v1/department/all?${params.toString()}`);
+  },
+
+  /** Toggle visibility of a department post */
+  toggleDepartmentPostVisibility: async (id: string, visibilityStatus: boolean) => {
+    const res = await requestJson<{ success: boolean; message: string }>(
+      `/api/v1/department/visibility/${id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ visibilityStatus }),
+      },
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('ieee:department-posts-changed', {
+          detail: { id, visibilityStatus, timestamp: Date.now() },
+        }),
+      );
+    }
+    return res;
   },
 
   getDepartmentPostById: (id: string) =>
@@ -526,28 +636,43 @@ export const adminApi = {
       true,
     ),
 
-  createDepartmentPost: (formData: FormData) =>
-    requestJson<{ success: boolean; message: string; post?: DepartmentPost }>(
+  createDepartmentPost: async (formData: FormData) => {
+    const res = await requestJson<{ success: boolean; message: string; post?: DepartmentPost }>(
       '/api/v1/department/create',
       {
         method: 'POST',
         body: formData,
       },
-    ),
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ieee:department-posts-changed', { detail: { timestamp: Date.now() } }));
+    }
+    return res;
+  },
 
-  updateDepartmentPost: (id: string, formData: FormData | Record<string, unknown>) =>
-    requestJson<{ success: boolean; message: string; post?: DepartmentPost }>(
+  updateDepartmentPost: async (id: string, formData: FormData | Record<string, unknown>) => {
+    const res = await requestJson<{ success: boolean; message: string; post?: DepartmentPost }>(
       `/api/v1/department/edit/${id}`,
       {
         method: 'PATCH',
         body: formData instanceof FormData ? formData : JSON.stringify(formData),
       },
-    ),
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ieee:department-posts-changed', { detail: { id, timestamp: Date.now() } }));
+    }
+    return res;
+  },
 
-  deleteDepartmentPost: (id: string) =>
-    requestJson<{ success: boolean; message: string }>(`/api/v1/department/delete/${id}`, {
+  deleteDepartmentPost: async (id: string) => {
+    const res = await requestJson<{ success: boolean; message: string }>(`/api/v1/department/delete/${id}`, {
       method: 'DELETE',
-    }),
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ieee:department-posts-changed', { detail: { id, timestamp: Date.now() } }));
+    }
+    return res;
+  },
 
   // 8. Registration Module
   createRegistration: (data: NewRegistrationPayload, mode: 'INDIVIDUAL' | 'TEAM') =>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowUpRight, CalendarDays, MapPin, X, Sparkles, CalendarX, ZoomIn } from 'lucide-react';
-import { adminApi, type UpcomingEvent } from '@/services/adminApi';
+import { adminApi, isItemVisible, type UpcomingEvent } from '@/services/adminApi';
 import ImageModal from '@/components/ImageModal';
 import fallbackEventsData from '@/data/upcomingEventsFallback.json';
 
@@ -66,16 +66,20 @@ export default function UpcomingEvents() {
 
         const res = await adminApi.getUpcomingEvents();
         if (isMounted) {
-          if (res.success && Array.isArray(res.posts) && res.posts.length > 0) {
-            setEvents(res.posts);
+          if (res.success && Array.isArray(res.posts)) {
+            const visible = res.posts.filter((evt) => isItemVisible(evt) && evt.visibilityStatus !== false);
+            setEvents(visible);
           } else {
-            setEvents((fallbackEventsData as UpcomingEvent[]) || []);
+            setEvents([]);
           }
         }
       } catch (err) {
         console.error('Failed to load upcoming events from API, using bundled events:', err);
         if (isMounted) {
-          setEvents((fallbackEventsData as UpcomingEvent[]) || []);
+          const visibleFallback = ((fallbackEventsData as UpcomingEvent[]) || []).filter(
+            (evt) => isItemVisible(evt) && evt.visibilityStatus !== false
+          );
+          setEvents(visibleFallback);
         }
       } finally {
         if (isMounted) {
@@ -86,8 +90,15 @@ export default function UpcomingEvents() {
 
     fetchUpcomingEvents();
 
+    const handleEventsUpdated = () => {
+      void fetchUpcomingEvents();
+    };
+
+    window.addEventListener('ieee:events-changed', handleEventsUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('ieee:events-changed', handleEventsUpdated);
     };
   }, []);
 

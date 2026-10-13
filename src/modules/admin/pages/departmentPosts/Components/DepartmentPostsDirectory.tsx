@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { adminApi } from "../../../../../services/adminApi";
 
 type DeptPost = {
@@ -8,6 +9,7 @@ type DeptPost = {
   name: string;
   date: string;
   status: "Published" | "Draft";
+  visibilityStatus: boolean;
 };
 
 export default function DepartmentPostsDirectory() {
@@ -16,13 +18,14 @@ export default function DepartmentPostsDirectory() {
 
   const [posts, setPosts] = useState<DeptPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        // Passing branch as query param ?dep=...
-        const response = await adminApi.getDepartmentPosts(dept);
+        // Admin endpoint: fetch all posts including hidden ones
+        const response = await adminApi.getDepartmentPostsAdmin(dept);
         if (response.success && response.posts) {
           const formattedPosts: DeptPost[] = response.posts.map((post: any) => ({
             id: post.postId || post._id,
@@ -30,6 +33,7 @@ export default function DepartmentPostsDirectory() {
             name: post.title || "Untitled Event",
             date: post.date || new Date(post.createdAt).toLocaleDateString(),
             status: "Published",
+            visibilityStatus: post.visibilityStatus !== false,
           }));
           setPosts(formattedPosts);
         } else {
@@ -43,7 +47,18 @@ export default function DepartmentPostsDirectory() {
     };
 
     fetchPosts();
-  }, [dept]);
+
+    const handleDeptChanged = () => {
+      if (!togglingId) {
+        void fetchPosts();
+      }
+    };
+
+    window.addEventListener('ieee:department-posts-changed', handleDeptChanged);
+    return () => {
+      window.removeEventListener('ieee:department-posts-changed', handleDeptChanged);
+    };
+  }, [dept, togglingId]);
 
   const handleDelete = async (postId: string) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
@@ -56,6 +71,29 @@ export default function DepartmentPostsDirectory() {
     } catch (error) {
       console.error("Failed to delete post:", error);
       alert("Failed to delete the post. Check console for details.");
+    }
+  };
+
+  const handleToggleVisibility = async (postId: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+
+    // Optimistic UI update
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, visibilityStatus: newStatus } : p))
+    );
+    setTogglingId(postId);
+
+    try {
+      await adminApi.toggleDepartmentPostVisibility(postId, newStatus);
+    } catch (err) {
+      // Revert on failure
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, visibilityStatus: currentStatus } : p))
+      );
+      const msg = err instanceof Error ? err.message : "Failed to update visibility.";
+      alert(msg);
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -88,12 +126,13 @@ export default function DepartmentPostsDirectory() {
 
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-admin-card shadow-xl backdrop-blur-xl">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[800px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02]">
                 <th className="px-6 py-4 font-semibold text-slate-300">Event Details</th>
                 <th className="px-6 py-4 font-semibold text-slate-300">Post ID</th>
                 <th className="px-6 py-4 font-semibold text-slate-300">Status</th>
+                <th className="px-6 py-4 font-semibold text-slate-300 text-center">Visibility</th>
                 <th className="px-6 py-4 text-center font-semibold text-slate-300">Actions</th>
               </tr>
             </thead>
@@ -101,7 +140,7 @@ export default function DepartmentPostsDirectory() {
             <tbody className="divide-y divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center">
                       <svg className="mb-4 h-8 w-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -115,13 +154,23 @@ export default function DepartmentPostsDirectory() {
                 posts.map((post) => (
                   <tr
                     key={post.id}
-                    className="group transition-colors hover:bg-white/[0.02]"
+                    className={`group transition-colors hover:bg-white/[0.02] ${
+                      !post.visibilityStatus ? 'opacity-50' : ''
+                    }`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-medium text-white text-base group-hover:text-blue-400 transition-colors">
-                          {post.name}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-white text-base group-hover:text-blue-400 transition-colors">
+                            {post.name}
+                          </span>
+                          {!post.visibilityStatus && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
+                              <EyeOff size={10} />
+                              Hidden
+                            </span>
+                          )}
+                        </div>
                         <span className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
                           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -148,6 +197,39 @@ export default function DepartmentPostsDirectory() {
                         <span className={`h-1.5 w-1.5 rounded-full ${post.status === "Published" ? "bg-emerald-400" : "bg-amber-400"}`}></span>
                         {post.status}
                       </span>
+                    </td>
+
+                    {/* Visibility Toggle */}
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        type="button"
+                        disabled={togglingId === post.id}
+                        onClick={() => handleToggleVisibility(post.id, post.visibilityStatus)}
+                        className="group/toggle inline-flex items-center gap-2 transition-all"
+                        title={post.visibilityStatus ? 'Click to hide from public' : 'Click to show on public pages'}
+                      >
+                        {/* Toggle Track */}
+                        <div
+                          className={`relative h-6 w-11 rounded-full transition-colors duration-300 ${
+                            post.visibilityStatus
+                              ? 'bg-emerald-500/80 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                              : 'bg-slate-600/80'
+                          } ${togglingId === post.id ? 'animate-pulse' : ''}`}
+                        >
+                          {/* Toggle Knob */}
+                          <div
+                            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-300 flex items-center justify-center ${
+                              post.visibilityStatus ? 'left-[22px]' : 'left-0.5'
+                            }`}
+                          >
+                            {post.visibilityStatus ? (
+                              <Eye size={10} className="text-emerald-600" />
+                            ) : (
+                              <EyeOff size={10} className="text-slate-500" />
+                            )}
+                          </div>
+                        </div>
+                      </button>
                     </td>
 
                     <td className="px-6 py-4">
@@ -178,7 +260,7 @@ export default function DepartmentPostsDirectory() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center">
                       <svg className="mb-4 h-12 w-12 text-slate-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />

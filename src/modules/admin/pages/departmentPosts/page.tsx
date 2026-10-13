@@ -17,6 +17,16 @@ export default function DepartmentPostsHub() {
       }
     };
     fetchCounts();
+
+    const handleDeptChanged = () => {
+      void fetchCounts();
+    };
+
+    window.addEventListener('ieee:department-posts-changed', handleDeptChanged);
+
+    return () => {
+      window.removeEventListener('ieee:department-posts-changed', handleDeptChanged);
+    };
   }, []);
 
   const departments = [
