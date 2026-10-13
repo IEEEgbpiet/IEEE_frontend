@@ -127,6 +127,21 @@ export interface UpcomingEventsResponse {
   posts: UpcomingEvent[];
 }
 
+export interface AnnouncementImage {
+  url: string;
+  publicId: string;
+}
+
+export interface AnnouncementRecord {
+  _id: string;
+  AnnouncementId: string;
+  title?: string;
+  description?: string;
+  image?: AnnouncementImage;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface DepartmentPostImage {
   url: string;
   publicId?: string;
@@ -453,6 +468,46 @@ export const adminApi = {
         method: 'DELETE',
       },
     ),
+
+  // 5.1 Announcements
+  getAnnouncements: () =>
+    requestJson<{
+      success: boolean;
+      count?: number;
+      data: AnnouncementRecord[];
+    }>('/api/v1/announcement/getAll', {}, true),
+
+  createAnnouncement: (formData: FormData) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      data: AnnouncementRecord;
+    }>('/api/v1/announcement/Createnew', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  updateAnnouncement: (
+    id: string,
+    formData: FormData | Record<string, unknown>,
+  ) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      data: AnnouncementRecord;
+    }>(`/api/v1/announcement/edit/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: formData instanceof FormData ? formData : JSON.stringify(formData),
+    }),
+
+  deleteAnnouncement: (id: string) =>
+    requestJson<{
+      success: boolean;
+      message: string;
+      data?: AnnouncementRecord;
+    }>(`/api/v1/announcement/delete/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
 
   // 6. Department Posts
   getDepartmentPosts: (dep?: string) => {

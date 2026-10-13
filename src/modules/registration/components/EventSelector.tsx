@@ -1,5 +1,5 @@
 import { Calendar, CheckCircle, Sparkles } from 'lucide-react';
-import { PREDEFINED_EVENTS } from '../constants';
+import { PREDEFINED_EVENTS } from '../../../data/constants';
 import type { PredefinedEvent } from '../types';
 
 interface EventSelectorProps {

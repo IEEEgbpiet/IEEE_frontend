@@ -35,8 +35,8 @@ export const navLinks: NavItem[] = [
       },
       {
         name: 'Robotics',
-        href: '/activities/robotics',
-        isExternal: false,
+        href: 'https://prasthanam-gbpiet.vercel.app/',
+        isExternal: true,
       },
     ],
   },
