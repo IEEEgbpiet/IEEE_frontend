@@ -14,7 +14,7 @@ export default function Footer() {
       name: 'Activities',
       dropdown: [
         { name: 'Events', href: '/activities/events' },
-        { name: 'Robotics', href: '/activities/robotics' },
+        { name: 'Robotics', href: 'https://prasthanam-gbpiet.vercel.app/' },
       ],
     },
     { name: 'Certificate', href: '/certificate' },
@@ -84,7 +84,9 @@ export default function Footer() {
             <div className="mt-6 flex items-center gap-3 sm:mt-7">
               {/* Instagram */}
               <a
-                href="#"
+                href="https://www.instagram.com/ieee_gbpiet"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="
                   flex h-10 w-10 shrink-0
@@ -103,7 +105,9 @@ export default function Footer() {
 
               {/* LinkedIn */}
               <a
-                href="#"
+                href="https://www.linkedin.com/company/ieee-gbpiet-student-branch/"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="LinkedIn"
                 className="
                   flex h-10 w-10 shrink-0
@@ -246,7 +250,9 @@ export default function Footer() {
                         </Link>
 
                         <Link
-                          to="/activities/robotics"
+                          to="https://prasthanam-gbpiet.vercel.app/"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="
                             flex items-center gap-2
                             py-2

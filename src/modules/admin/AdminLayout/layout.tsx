@@ -22,6 +22,9 @@ export default function AdminLayout() {
     if (path.includes("/admin/upcoming-posts/manage")) return "Edit posts Directory";
     if (path.includes("/admin/upcoming-posts/edit")) return "Edit Post Panel";
     if (path.startsWith("/admin/upcoming-posts")) return "Upcoming Events sections";
+    if (path.includes("/admin/announcements/add")) return "New Announcement";
+    if (path.includes("/admin/announcements/edit")) return "Edit Announcement";
+    if (path.startsWith("/admin/announcements")) return "Announcements";
     if (path.includes("/admin/department-posts") && path.includes("/add")) return "Create a New post";
     if (path.includes("/admin/department-posts") && path.includes("/manage")) return "Department posts Directory";
     if (path.includes("/admin/department-posts") && path.includes("/edit")) return "Edit Post Panel";

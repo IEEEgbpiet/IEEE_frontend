@@ -1,4 +1,4 @@
-import type { MemberFormState, PredefinedEvent } from './types';
+import type { MemberFormState, PredefinedEvent } from '../modules/registration/types';
 
 // Predefined IEEE events with fixed, predefined dates
 export const PREDEFINED_EVENTS: PredefinedEvent[] = [

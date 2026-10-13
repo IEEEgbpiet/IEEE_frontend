@@ -17,6 +17,10 @@ import AddUpcomingPost from './pages/upcomingPosts/components/AddUpcomingPost';
 import EditUpcomingDirectory from './pages/upcomingPosts/components/EditUpcomingDirectory';
 import EditUpcomingPostPanel from './pages/upcomingPosts/components/EditUpcomingPostPanel';
 
+// Announcements
+import AnnouncementsDirectory from './pages/announcements/AnnouncementsDirectory';
+import AnnouncementFormPage from './pages/announcements/AnnouncementFormPage';
+
 // Department Posts
 import DepartmentPostsHub from './pages/departmentPosts/page';
 import DepartmentDetail from './pages/departmentPosts/Components/DepartmentDetail';
@@ -78,6 +82,17 @@ export default function AdminRoutes() {
           <Route path="add" element={<AddUpcomingPost />} />
           <Route path="manage" element={<EditUpcomingDirectory />} />
           <Route path="edit/:id" element={<EditUpcomingPostPanel />} />
+        </Route>
+
+        {/* ============================================================
+            ANNOUNCEMENTS
+        ============================================================ */}
+
+        <Route path="announcements">
+          <Route index element={<AnnouncementsDirectory />} />
+          <Route path="manage" element={<AnnouncementsDirectory />} />
+          <Route path="add" element={<AnnouncementFormPage />} />
+          <Route path="edit/:id" element={<AnnouncementFormPage />} />
         </Route>
 
         {/* ============================================================

@@ -1,5 +1,5 @@
 import { User, Building, Mail, Phone } from 'lucide-react';
-import { BRANCH_OPTIONS, YEAR_OPTIONS } from '../constants';
+import { BRANCH_OPTIONS, YEAR_OPTIONS } from '../../../data/constants';
 import type { MemberFormState } from '../types';
 
 interface MemberFieldsProps {

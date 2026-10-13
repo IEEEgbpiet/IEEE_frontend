@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import {
   Award,
   Calendar,
+  Megaphone,
   Layers,
   Headset,
   FileText,
@@ -40,6 +41,11 @@ const defaultItems: SidebarItem[] = [
     label: "Upcoming Events",
     path: "/admin/upcoming-posts",
     icon: Calendar,
+  },
+  {
+    label: "Announcements",
+    path: "/admin/announcements",
+    icon: Megaphone,
   },
   {
     label: "Posts",

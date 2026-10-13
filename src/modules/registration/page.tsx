@@ -8,7 +8,7 @@ import {
   type RegistrationMember,
 } from '@/services/adminApi';
 
-import { PREDEFINED_EVENTS, createEmptyMember } from './constants';
+import { PREDEFINED_EVENTS, createEmptyMember } from '../../data/constants';
 import type { MemberFormState, PredefinedEvent, RegistrationMode } from './types';
 
 // Child Components
