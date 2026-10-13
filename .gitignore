@@ -39,3 +39,4 @@ coverage/
 
 # Husky (local hook state, not the hook scripts themselves)
 .husky/_/
+.vercel
