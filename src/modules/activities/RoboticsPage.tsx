@@ -3,7 +3,7 @@ import { ExternalLink, Cpu, Layers } from 'lucide-react';
 import { ActivityCard } from './components/ActivityCard';
 import ActivityDetailedCard from './components/ActivityDetailedCard';
 import ImageModal from '@/components/ImageModal';
-import { adminApi, type DepartmentPost } from '@/services/adminApi';
+import { adminApi, isItemVisible, type DepartmentPost } from '@/services/adminApi';
 import type { Activity } from './EventsPage';
 
 const formatDepartmentPost = (post: DepartmentPost): Activity => {
@@ -70,7 +70,8 @@ export default function RoboticsPage() {
         setLoading(true);
         const res = await adminApi.getDepartmentPosts();
         if (isMounted && res.success && Array.isArray(res.posts)) {
-          const roboPosts = res.posts
+          const visiblePosts = res.posts.filter((p) => isItemVisible(p) && p.visibilityStatus !== false);
+          const roboPosts = visiblePosts
             .filter((p) => {
               const cat = (p.category || '').toLowerCase();
               const tit = (p.title || '').toLowerCase();
@@ -99,8 +100,15 @@ export default function RoboticsPage() {
 
     fetchRoboticsPosts();
 
+    const handleDeptUpdated = () => {
+      void fetchRoboticsPosts();
+    };
+
+    window.addEventListener('ieee:department-posts-changed', handleDeptUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('ieee:department-posts-changed', handleDeptUpdated);
     };
   }, []);
 

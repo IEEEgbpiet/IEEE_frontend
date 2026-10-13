@@ -47,7 +47,18 @@ export default function DepartmentPostsDirectory() {
     };
 
     fetchPosts();
-  }, [dept]);
+
+    const handleDeptChanged = () => {
+      if (!togglingId) {
+        void fetchPosts();
+      }
+    };
+
+    window.addEventListener('ieee:department-posts-changed', handleDeptChanged);
+    return () => {
+      window.removeEventListener('ieee:department-posts-changed', handleDeptChanged);
+    };
+  }, [dept, togglingId]);
 
   const handleDelete = async (postId: string) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
