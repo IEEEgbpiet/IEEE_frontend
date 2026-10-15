@@ -2,12 +2,7 @@ import type { MemberFormState, PredefinedEvent } from '../modules/registration/t
 
 // Predefined IEEE events with fixed, predefined dates
 export const PREDEFINED_EVENTS: PredefinedEvent[] = [
-  {
-    id: 'ieee-introductory-workshop-2026',
-    name: 'IEEE Introductory Workshop',
-    date: '2026-10-09',
-    displayDate: '9 October 2026',
-  },
+  
   {
     id: 'ui-design-showcase-2026',
     name: 'UI Design Showcase',
