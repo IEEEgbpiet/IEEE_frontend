@@ -270,12 +270,13 @@ export default function UpcomingEventsPopup({
           role="dialog"
           aria-modal="true"
           aria-labelledby="announcement-popup-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 lg:p-0 animate-fadeIn"
           onClick={handleClosePopup}
         >
           {/* Main Card Container */}
           <div
             className="
+              announcement-modal-laptop
               relative
               flex
               flex-col
@@ -303,12 +304,12 @@ export default function UpcomingEventsPopup({
             <div className="h-1.5 w-full bg-gradient-to-r from-[#00629b] via-[#0b63ff] to-[#00d2ff] shrink-0" />
 
             {/* Top Header Strip with Badge and Close Button */}
-            <div className="relative z-30 flex items-center justify-between px-4 py-2.5 bg-[#060a14]/90 border-b border-white/10 shrink-0">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-300">
-                <Megaphone size={13} className="text-blue-400" />
-                <span className="uppercase tracking-wider text-[11px]">Announcement</span>
+            <div className="relative z-30 flex items-center justify-between px-4 sm:px-5 py-2.5 sm:py-3 bg-[#060a14]/90 border-b border-white/10 shrink-0">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 sm:px-3 py-0.5 sm:py-1 text-xs font-semibold text-blue-300">
+                <Megaphone size={13} className="text-blue-400 sm:w-3.5 sm:h-3.5" />
+                <span className="uppercase tracking-wider text-[11px] sm:text-xs">Announcement</span>
                 {announcements.length > 1 && (
-                  <span className="ml-1 text-[10px] text-blue-300/70 font-mono">
+                  <span className="ml-1 text-[10px] sm:text-[11px] text-blue-300/70 font-mono">
                     ({currentIndex + 1}/{announcements.length})
                   </span>
                 )}
@@ -322,6 +323,8 @@ export default function UpcomingEventsPopup({
                   flex
                   h-8
                   w-8
+                  sm:h-9
+                  sm:w-9
                   items-center
                   justify-center
                   rounded-full
@@ -337,7 +340,7 @@ export default function UpcomingEventsPopup({
                 aria-label="Close popup"
                 title="Close"
               >
-                <X size={16} strokeWidth={2.2} />
+                <X size={16} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
               </button>
             </div>
 
@@ -362,7 +365,7 @@ export default function UpcomingEventsPopup({
                     key={`img-${activeAnnouncement.AnnouncementId || activeAnnouncement._id || currentIndex}`}
                     src={imageUrl}
                     alt={displayTitle}
-                    className="relative max-h-full max-w-full object-contain z-10 select-none cursor-pointer transition-opacity duration-300 p-2"
+                    className="relative max-h-full max-w-full object-contain z-10 select-none cursor-pointer transition-opacity duration-300 p-2 sm:p-3"
                     onClick={() =>
                       setPreviewPoster({
                         isOpen: true,
@@ -375,15 +378,15 @@ export default function UpcomingEventsPopup({
                 </div>
               ) : (
                 /* Rich Typography Card when Announcement has no poster image */
-                <div className="relative w-full h-full flex flex-col justify-center items-center p-6 text-center overflow-y-auto">
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-500/20 border border-blue-500/30 text-blue-400 shadow-inner">
-                    <Sparkles size={32} />
+                <div className="relative w-full h-full flex flex-col justify-center items-center p-6 sm:p-10 text-center overflow-y-auto">
+                  <div className="mb-4 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-500/20 border border-blue-500/30 text-blue-400 shadow-inner">
+                    <Sparkles size={32} className="sm:w-10 sm:h-10" />
                   </div>
-                  <h4 className="text-xl font-bold text-white leading-snug max-w-sm mb-3">
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-snug max-w-lg mb-3">
                     {displayTitle}
                   </h4>
                   {displayDescription && (
-                    <p className="text-sm text-slate-300 leading-relaxed max-w-sm line-clamp-6">
+                    <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-lg line-clamp-6">
                       {displayDescription}
                     </p>
                   )}
@@ -399,12 +402,15 @@ export default function UpcomingEventsPopup({
                     className="
                       absolute
                       left-2.5
+                      sm:left-4
                       top-1/2
                       -translate-y-1/2
                       z-30
                       flex
                       h-9
                       w-9
+                      sm:h-11
+                      sm:w-11
                       items-center
                       justify-center
                       rounded-full
@@ -423,7 +429,7 @@ export default function UpcomingEventsPopup({
                     "
                     aria-label="Previous announcement"
                   >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
                   </button>
 
                   <button
@@ -432,12 +438,15 @@ export default function UpcomingEventsPopup({
                     className="
                       absolute
                       right-2.5
+                      sm:right-4
                       top-1/2
                       -translate-y-1/2
                       z-30
                       flex
                       h-9
                       w-9
+                      sm:h-11
+                      sm:w-11
                       items-center
                       justify-center
                       rounded-full
@@ -456,7 +465,7 @@ export default function UpcomingEventsPopup({
                     "
                     aria-label="Next announcement"
                   >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={20} className="sm:w-6 sm:h-6" />
                   </button>
 
                   {/* Sleek Pagination Dots */}
@@ -485,17 +494,17 @@ export default function UpcomingEventsPopup({
             {/* ----------------------------------------------------
                 BOTTOM SECTION: TITLE, DESCRIPTION & DATE
                 ---------------------------------------------------- */}
-            <div className="shrink-0 p-4 sm:p-5 flex flex-col gap-2.5 bg-[#060a14] border-t border-white/10">
-              <div className="flex items-center justify-between gap-2">
+            <div className="shrink-0 p-4 sm:p-5 lg:px-6 lg:py-4.5 flex flex-col gap-2.5 sm:gap-3 bg-[#060a14] border-t border-white/10">
+              <div className="flex items-center justify-between gap-3">
                 <h3
                   id="announcement-popup-title"
-                  className="text-base sm:text-lg font-bold text-white line-clamp-1 leading-snug"
+                  className="text-base sm:text-lg lg:text-xl font-bold text-white line-clamp-1 leading-snug"
                 >
                   {displayTitle}
                 </h3>
                 {formattedDate && (
-                  <span className="flex items-center gap-1 text-[11px] text-slate-400 shrink-0 font-medium">
-                    <Calendar size={12} className="text-blue-400" />
+                  <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 shrink-0 font-medium">
+                    <Calendar size={13} className="text-blue-400" />
                     {formattedDate}
                   </span>
                 )}
@@ -525,8 +534,10 @@ export default function UpcomingEventsPopup({
                   via-[#0b63ff]
                   to-[#00a3ff]
                   py-2.5
+                  sm:py-3
                   px-4
                   text-sm
+                  sm:text-base
                   font-bold
                   text-white
                   shadow-[0_0_20px_rgba(11,99,255,0.4)]
