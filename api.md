@@ -3,8 +3,8 @@
 Comprehensive API documentation for the IEEE GBPIET Student Branch Backend.
 
 ## 📊 Summary of APIs
-- **Total APIs Count:** 33
-- **Total Modules:** 8
+- **Total APIs Count:** 38
+- **Total Modules:** 10
 - **Base URL:** `https://ieee-backend-7z25.onrender.com`
 
 ---
@@ -344,3 +344,164 @@ Manages participant event registrations (supporting both `INDIVIDUAL` and `TEAM`
   }
   ```
 
+---
+
+## 9. Student Directory Module (`/api/v1/directory`)
+
+Manages student directory records and profiles within the institution.
+
+### 1. Get All Student Profiles
+- **Endpoint:** `GET /api/v1/directory/getAll`
+- **Description:** Retrieves a complete list of all student directory profiles, sorted in ascending alphabetical order by student name (`name: 1`).
+- **Auth Required:** No (Public)
+- **Headers:** None
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "count": 2,
+    "data": [
+      {
+        "_id": "6741b123e4b01234567890e1",
+        "instituteId": "22010101",
+        "name": "Aarav Sharma",
+        "branch": "CSE",
+        "year": 3,
+        "batchYear": 2026,
+        "email": "aarav.sharma@example.com",
+        "phone": "9876543210",
+        "gender": "MALE",
+        "createdAt": "2026-10-06T10:00:00.000Z",
+        "updatedAt": "2026-10-06T10:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+---
+
+## 10. Announcement Module (`/api/v1/announcement`)
+
+Manages general-purpose announcements and popups for the IEEE student branch. Supports flexible content — frontend can send any combination of `title`, `description`, and `image`, but must provide **at least one** field.
+
+### 1. Get All Announcements
+- **Endpoint:** `GET /api/v1/announcement/getAll`
+- **Description:** Retrieves all announcements sorted in reverse chronological order (`createdAt: -1`). Used across public modals, popups, and admin directory.
+- **Auth Required:** No (Public)
+- **Headers:** None
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "count": 2,
+    "data": [
+      {
+        "_id": "6ace11851cff29b2e59f9024",
+        "AnnouncementId": "ANN8088195239",
+        "title": "Workshop 2026",
+        "description": "Annual IEEE workshop coming soon!",
+        "image": {
+          "url": "https://res.cloudinary.com/ieee-gbpiet/image/upload/v1727280000/ieee-announcements/banner1.png",
+          "publicId": "ieee-announcements/banner1"
+        },
+        "createdAt": "2026-10-13T11:09:57.503Z",
+        "updatedAt": "2026-10-13T11:09:57.503Z"
+      },
+      {
+        "_id": "6ace117c1cff29b2e59f9023",
+        "AnnouncementId": "ANN6387949797",
+        "title": "Special Announcement",
+        "description": "Important notice regarding upcoming student branch activities.",
+        "image": {
+          "url": "",
+          "publicId": ""
+        },
+        "createdAt": "2026-10-13T11:09:48.990Z",
+        "updatedAt": "2026-10-13T11:09:48.990Z"
+      }
+    ]
+  }
+  ```
+
+---
+
+### 2. Create New Announcement
+- **Endpoint:** `POST /api/v1/announcement/Createnew`
+- **Description:** Creates a new announcement with optional Cloudinary image upload. At least one of `title`, `description`, or `image` must be provided.
+- **Auth Required:** Yes (`verifyToken`)
+- **Headers:**
+  - `Authorization: Bearer <token>`
+  - `Content-Type: multipart/form-data`
+- **FormData Fields:**
+  - `title` *(string, optional)*: Announcement headline
+  - `description` *(string, optional)*: Announcement body/description
+  - `image` *(file, optional)*: Image file (`jpg`, `jpeg`, `png`, `webp`, max 5MB)
+- **Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "Announcement created successfully",
+    "data": {
+      "_id": "6ace117c1cff29b2e59f9023",
+      "AnnouncementId": "ANN6387949797",
+      "title": "Workshop 2026",
+      "description": "Annual IEEE workshop coming soon!",
+      "image": {
+        "url": "https://res.cloudinary.com/ieee-gbpiet/image/upload/v1727280000/ieee-announcements/banner1.png",
+        "publicId": "ieee-announcements/banner1"
+      },
+      "createdAt": "2026-10-13T11:09:48.990Z",
+      "updatedAt": "2026-10-13T11:09:48.990Z"
+    }
+  }
+  ```
+
+---
+
+### 3. Update Announcement
+- **Endpoint:** `PATCH /api/v1/announcement/edit/:id`
+- **Description:** Updates an existing announcement by `AnnouncementId` or MongoDB `_id`. Supports partial updates. If a new image is uploaded, the previous Cloudinary asset is automatically destroyed.
+- **Auth Required:** Yes (`verifyToken`)
+- **Headers:**
+  - `Authorization: Bearer <token>`
+  - `Content-Type: multipart/form-data` or `application/json`
+- **URL Parameters:** `:id` (`AnnouncementId` or MongoDB `_id`)
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Announcement updated successfully",
+    "data": {
+      "_id": "6ace117c1cff29b2e59f9023",
+      "AnnouncementId": "ANN6387949797",
+      "title": "Updated Announcement Title",
+      "description": "Updated announcement body",
+      "image": {
+        "url": "https://res.cloudinary.com/ieee-gbpiet/image/upload/v1727280000/ieee-announcements/banner1.png",
+        "publicId": "ieee-announcements/banner1"
+      },
+      "createdAt": "2026-10-13T11:09:48.990Z",
+      "updatedAt": "2026-10-13T11:10:30.933Z"
+    }
+  }
+  ```
+
+---
+
+### 4. Delete Announcement
+- **Endpoint:** `DELETE /api/v1/announcement/delete/:id`
+- **Description:** Deletes an announcement by `AnnouncementId` or MongoDB `_id` and deletes any associated Cloudinary image.
+- **Auth Required:** Yes (`verifyToken`)
+- **Headers:** `Authorization: Bearer <token>`
+- **URL Parameters:** `:id` (`AnnouncementId` or MongoDB `_id`)
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Announcement deleted successfully",
+    "data": {
+      "_id": "6ace117c1cff29b2e59f9023",
+      "AnnouncementId": "ANN6387949797"
+    }
+  }
+  ```

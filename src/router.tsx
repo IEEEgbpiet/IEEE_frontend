@@ -13,7 +13,7 @@ import PrivateRoute from './components/PrivateRoute'; //Also uncomment this late
 import Login from './modules/admin/pages/authentication/components/login';
 import ForgotPassword from './modules/admin/pages/authentication/ForgotPassword';
 import AdminRoutes from './modules/admin/router';
-import FrontendCommingSoon from './pages/FrontendCommingSoon'
+import FrontendCommingSoon from './pages/FrontendCommingSoon';
 
 export function AppRouter() {
   return (
@@ -32,7 +32,7 @@ export function AppRouter() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/registration" element={<RegistrationPage />} />
           <Route path="/Registration" element={<RegistrationPage />} />
-          <Route path="/joinieee" element={<FrontendCommingSoon/>} />
+          <Route path="/joinieee" element={<FrontendCommingSoon />} />
         </Route>
 
         {/* Auth Routes */}
@@ -43,11 +43,9 @@ export function AppRouter() {
         {/* CMS / Admin Portal Nested Routes */}
         <Route
           path="/admin/*"
-          element=
-              <PrivateRoute>
-              <AdminRoutes />
-            </PrivateRoute>
-          
+          element=<PrivateRoute>
+            <AdminRoutes />
+          </PrivateRoute>
         />
 
         {/* 404 Fallback */}

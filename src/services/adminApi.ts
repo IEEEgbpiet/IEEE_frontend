@@ -549,37 +549,64 @@ export const adminApi = {
       data: AnnouncementRecord[];
     }>('/api/v1/announcement/getAll', {}, true),
 
-  createAnnouncement: (formData: FormData) =>
-    requestJson<{
+  createAnnouncement: async (formData: FormData) => {
+    const res = await requestJson<{
       success: boolean;
       message: string;
       data: AnnouncementRecord;
     }>('/api/v1/announcement/Createnew', {
       method: 'POST',
       body: formData,
-    }),
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('ieee:announcements-changed', {
+          detail: { timestamp: Date.now() },
+        }),
+      );
+    }
+    return res;
+  },
 
-  updateAnnouncement: (
+  updateAnnouncement: async (
     id: string,
     formData: FormData | Record<string, unknown>,
-  ) =>
-    requestJson<{
+  ) => {
+    const res = await requestJson<{
       success: boolean;
       message: string;
       data: AnnouncementRecord;
     }>(`/api/v1/announcement/edit/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: formData instanceof FormData ? formData : JSON.stringify(formData),
-    }),
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('ieee:announcements-changed', {
+          detail: { id, timestamp: Date.now() },
+        }),
+      );
+    }
+    return res;
+  },
 
-  deleteAnnouncement: (id: string) =>
-    requestJson<{
+  deleteAnnouncement: async (id: string) => {
+    const res = await requestJson<{
       success: boolean;
       message: string;
       data?: AnnouncementRecord;
     }>(`/api/v1/announcement/delete/${encodeURIComponent(id)}`, {
       method: 'DELETE',
-    }),
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('ieee:announcements-changed', {
+          detail: { id, timestamp: Date.now() },
+        }),
+      );
+    }
+    return res;
+  },
 
   // 6. Department Posts
   getDepartmentPosts: async (dep?: string) => {
