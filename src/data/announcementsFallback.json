@@ -1,0 +1,14 @@
+[
+  {
+    "_id": "ann-fallback-01",
+    "AnnouncementId": "ANN8088195239",
+    "title": "Welcome to IEEE GBPIET Student Branch",
+    "description": "Discover exciting technical symposiums, research opportunities, workshops, and student networking sessions.",
+    "image": {
+      "url": "https://res.cloudinary.com/qbzlr68i/image/upload/v1791464667/ieee-upcoming-events/fuxyi3vqtfnx5vxpfpce.jpg",
+      "publicId": "ieee-upcoming-events/fuxyi3vqtfnx5vxpfpce"
+    },
+    "createdAt": "2026-10-13T11:09:57.503Z",
+    "updatedAt": "2026-10-13T11:09:57.503Z"
+  }
+]

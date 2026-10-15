@@ -97,3 +97,18 @@ body {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+/* Announcement popup sizing:
+   Only for laptop and higher screen sizes (width >= 1024px) with 16:9 and widescreen aspect ratio (>= 1.5):
+   - Height: 90vh (covers 90% of the viewport height, 45vh each way from center, leaving 5vh margins top & bottom)
+   - Width: 50vw (centered with 25vw margin on both left and right)
+*/
+@media screen and (min-width: 1024px) and (min-aspect-ratio: 1.5) {
+  .announcement-modal-laptop {
+    width: 50vw !important;
+    max-width: 50vw !important;
+    height: 90vh !important;
+    max-height: 90vh !important;
+  }
+}
+

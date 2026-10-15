@@ -1,38 +1,55 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   X,
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
+  Megaphone,
+  Calendar,
+  Sparkles,
 } from 'lucide-react';
-import { adminApi, isItemVisible, type UpcomingEvent } from '@/services/adminApi';
+import { adminApi, type AnnouncementRecord } from '@/services/adminApi';
 import ImageModal from '@/components/ImageModal';
-import fallbackEventsData from '@/data/upcomingEventsFallback.json';
+import fallbackAnnouncementsData from '@/data/announcementsFallback.json';
 
-const STORAGE_KEY_POPUP_DISMISSED = 'ieee_upcoming_popup_dismissed';
-const STORAGE_KEY_PILL_DISMISSED = 'ieee_upcoming_pill_dismissed';
+const STORAGE_KEY_POPUP_DISMISSED = 'ieee_announcement_popup_dismissed';
+const STORAGE_KEY_PILL_DISMISSED = 'ieee_announcement_pill_dismissed';
 
 interface UpcomingEventsPopupProps {
   isParentLoading?: boolean;
 }
 
-const getEventImage = (image?: UpcomingEvent['image']): string => {
-  if (typeof image === 'object' && image?.url) return image.url;
-  if (typeof image === 'string' && image.trim().length > 0) return image;
-  return '/images/sih.jpg';
+const getAnnouncementImage = (image?: AnnouncementRecord['image']): string => {
+  if (typeof image === 'object' && image?.url && image.url.trim().length > 0) {
+    return image.url;
+  }
+  return '';
 };
 
-export default function UpcomingEventsPopup({ isParentLoading = false }: UpcomingEventsPopupProps) {
-  const navigate = useNavigate();
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+};
+
+export default function UpcomingEventsPopup({
+  isParentLoading = false,
+}: UpcomingEventsPopupProps) {
   const location = useLocation();
 
-  // Initialize with all upcoming events so all events are immediately loaded
-  const [events, setEvents] = useState<UpcomingEvent[]>(() => {
-    return Array.isArray(fallbackEventsData) && fallbackEventsData.length > 0
-      ? (fallbackEventsData as UpcomingEvent[]).filter(
-          (e) => isItemVisible(e) && e.visibilityStatus !== false,
-        )
+  // Initialize with fallback announcements if available
+  const [announcements, setAnnouncements] = useState<AnnouncementRecord[]>(() => {
+    return Array.isArray(fallbackAnnouncementsData) && fallbackAnnouncementsData.length > 0
+      ? (fallbackAnnouncementsData as AnnouncementRecord[])
       : [];
   });
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,6 +64,7 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
       return false;
     }
   });
+
   const [isPillDismissed, setIsPillDismissed] = useState<boolean>(() => {
     try {
       return sessionStorage.getItem(STORAGE_KEY_PILL_DISMISSED) === 'true';
@@ -64,77 +82,74 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
     url: '',
   });
 
-  // Fetch all upcoming events from backend API (with fallback to live Render backend)
+  // Fetch announcements from /api/v1/announcement/getAll
   useEffect(() => {
     let isMounted = true;
 
-    const fetchEvents = async () => {
+    const fetchAnnouncements = async () => {
       try {
-        const res = await adminApi.getUpcomingEvents();
-        if (isMounted && res.success && Array.isArray(res.posts)) {
-          const visible = res.posts.filter((e) => isItemVisible(e) && e.visibilityStatus !== false);
-          setEvents(visible);
+        const res = await adminApi.getAnnouncements();
+        if (isMounted && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          setAnnouncements(res.data);
           return;
         }
       } catch (err) {
-        console.warn('Could not load upcoming events from primary API:', err);
+        console.warn('Could not load announcements from primary API:', err);
       }
 
-      // If local API failed or was empty, query live Render backend to get all events
+      // If primary API failed, query Render backend directly
       try {
         const fallbackRes = await fetch(
-          'https://ieee-backend-7z25.onrender.com/api/v1/upcomingevents/all',
+          'https://ieee-backend-7z25.onrender.com/api/v1/announcement/getAll',
           { cache: 'no-store' }
         );
         if (fallbackRes.ok) {
           const data = await fallbackRes.json();
-          if (isMounted && data.success && Array.isArray(data.posts)) {
-            const visible = data.posts.filter((e: any) => isItemVisible(e) && e.visibilityStatus !== false);
-            setEvents(visible);
+          if (isMounted && data.success && Array.isArray(data.data) && data.data.length > 0) {
+            setAnnouncements(data.data);
             return;
           }
         }
       } catch (fallbackErr) {
-        console.warn('Fallback backend unreachable, using bundled events:', fallbackErr);
+        console.warn('Fallback backend unreachable for announcements:', fallbackErr);
       }
     };
 
-    fetchEvents();
+    fetchAnnouncements();
 
-    const handleEventsUpdated = () => {
-      void fetchEvents();
+    const handleAnnouncementsUpdated = () => {
+      void fetchAnnouncements();
     };
 
-    window.addEventListener('ieee:events-changed', handleEventsUpdated);
+    window.addEventListener('ieee:announcements-changed', handleAnnouncementsUpdated);
 
     return () => {
       isMounted = false;
-      window.removeEventListener('ieee:events-changed', handleEventsUpdated);
+      window.removeEventListener('ieee:announcements-changed', handleAnnouncementsUpdated);
     };
   }, []);
 
-  // Auto-cycle through events every 4.5 seconds if popup is open and user is not interacting
+  // Auto-cycle through announcements every 5 seconds if popup is open and user is not interacting
   useEffect(() => {
-    if (!isOpen || isPaused || events.length <= 1) return;
+    if (!isOpen || isPaused || announcements.length <= 1) return;
 
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % events.length);
-    }, 4500);
+      setCurrentIndex((prev) => (prev + 1) % announcements.length);
+    }, 5000);
 
     return () => clearInterval(timer);
-  }, [isOpen, isPaused, events.length]);
+  }, [isOpen, isPaused, announcements.length]);
 
-  // Control auto-opening logic
+  // Auto-open logic
   useEffect(() => {
-    const isEventsPage = location.pathname.startsWith('/activities/events');
     const isAdminPage = location.pathname.startsWith('/admin');
 
-    if (isEventsPage || isAdminPage) {
+    if (isAdminPage) {
       setIsOpen(false);
       return;
     }
 
-    if (isParentLoading || hasDismissed || events.length === 0) {
+    if (isParentLoading || hasDismissed || announcements.length === 0) {
       return;
     }
 
@@ -143,7 +158,7 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [isParentLoading, hasDismissed, events.length, location.pathname]);
+  }, [isParentLoading, hasDismissed, announcements.length, location.pathname]);
 
   // Handle ESC and Arrow key navigation
   useEffect(() => {
@@ -153,15 +168,15 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
       if (e.key === 'Escape') {
         handleClosePopup();
       } else if (e.key === 'ArrowLeft') {
-        setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
+        setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length);
       } else if (e.key === 'ArrowRight') {
-        setCurrentIndex((prev) => (prev + 1) % events.length);
+        setCurrentIndex((prev) => (prev + 1) % announcements.length);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, events.length]);
+  }, [isOpen, announcements.length]);
 
   // Lock background scroll when popup is open
   useEffect(() => {
@@ -174,10 +189,10 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
     }
   }, [isOpen]);
 
-  const activeEvent = useMemo(() => {
-    if (events.length === 0) return null;
-    return events[currentIndex] || events[0];
-  }, [events, currentIndex]);
+  const activeAnnouncement = useMemo(() => {
+    if (announcements.length === 0) return null;
+    return announcements[currentIndex] || announcements[0];
+  }, [announcements, currentIndex]);
 
   const handleClosePopup = () => {
     setIsOpen(false);
@@ -203,20 +218,14 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
     setIsOpen(true);
   };
 
-  const handleGoToEvents = () => {
-    handleClosePopup();
-    navigate('/activities/events?tab=upcoming');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handlePrevAnnouncement = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length);
   };
 
-  const handlePrevEvent = (e?: React.MouseEvent) => {
+  const handleNextAnnouncement = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setCurrentIndex((prev) => (prev - 1 + events.length) % events.length);
-  };
-
-  const handleNextEvent = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setCurrentIndex((prev) => (prev + 1) % events.length);
+    setCurrentIndex((prev) => (prev + 1) % announcements.length);
   };
 
   // Touch swipe support for mobile
@@ -229,48 +238,52 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 40) {
       if (diff > 0) {
-        handleNextEvent();
+        handleNextAnnouncement();
       } else {
-        handlePrevEvent();
+        handlePrevAnnouncement();
       }
     }
     touchStartX.current = null;
   };
 
-  if (events.length === 0) {
+  if (announcements.length === 0) {
     return null;
   }
 
-  const imageUrl = getEventImage(activeEvent?.image);
-  const displayTitle = activeEvent?.title || activeEvent?.eventName || 'Upcoming Event';
+  const imageUrl = getAnnouncementImage(activeAnnouncement?.image);
+  const displayTitle =
+    activeAnnouncement?.title?.trim() || 'IEEE Student Branch Announcement';
+  const displayDescription = activeAnnouncement?.description?.trim() || '';
+  const formattedDate = formatDate(activeAnnouncement?.createdAt);
 
   return (
     <>
       {/* ========================================================
-          STREAMLINED UPCOMING EVENTS MODAL POPUP
-          - Shows ALL upcoming events with smooth navigation
-          - Mobile & Tablet: Portrait Mode only
-          - Insets: 10vw left & right, 15vh top & bottom (width: 80vw, height: 70vh)
-          - Laptop: 30vw left & right, 15vh top & bottom (width: 40vw, height: 70vh)
-          - Content: Image, Title, and "Go to Events" button ONLY
+          STREAMLINED ANNOUNCEMENT MODAL POPUP
+          - Powered by /api/v1/announcement/getAll
+          - Shows live branch announcements with smooth navigation
+          - Responsive: Portrait Mode
+          - Top accent gradient bar & announcement badge
           ======================================================== */}
-      {isOpen && activeEvent && (
+      {isOpen && activeAnnouncement && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-labelledby="upcoming-event-popup-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-0 animate-fadeIn"
+          aria-labelledby="announcement-popup-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 lg:p-0 animate-fadeIn"
           onClick={handleClosePopup}
         >
           {/* Main Card Container */}
           <div
             className="
+              announcement-modal-laptop
               relative
               flex
               flex-col
-              w-[80vw]
-              h-[70vh]
-              lg:w-[40vw]
+              w-[90vw]
+              max-w-[480px]
+              h-[75vh]
+              max-h-[640px]
               overflow-hidden
               rounded-2xl
               sm:rounded-3xl
@@ -288,95 +301,124 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
             onTouchEnd={handleTouchEnd}
           >
             {/* Top Accent Gradient Bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-[#00629b] via-[#0b63ff] to-[#5aa2ff] shrink-0" />
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#00629b] via-[#0b63ff] to-[#00d2ff] shrink-0" />
 
-            {/* ----------------------------------------------------
-                IMAGE SECTION (Fills flexible remaining portrait height)
-                ---------------------------------------------------- */}
-            <div className="relative w-full flex-1 min-h-0 bg-[#040711] overflow-hidden flex items-center justify-center select-none">
-              {/* Blurred Ambient Backdrop */}
-              <img
-                key={`bg-${activeEvent.postId || currentIndex}`}
-                src={imageUrl}
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 h-full w-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none transition-opacity duration-500"
-              />
+            {/* Top Header Strip with Badge and Close Button */}
+            <div className="relative z-30 flex items-center justify-between px-4 sm:px-5 py-2.5 sm:py-3 bg-[#060a14]/90 border-b border-white/10 shrink-0">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 sm:px-3 py-0.5 sm:py-1 text-xs font-semibold text-blue-300">
+                <Megaphone size={13} className="text-blue-400 sm:w-3.5 sm:h-3.5" />
+                <span className="uppercase tracking-wider text-[11px] sm:text-xs">Announcement</span>
+                {announcements.length > 1 && (
+                  <span className="ml-1 text-[10px] sm:text-[11px] text-blue-300/70 font-mono">
+                    ({currentIndex + 1}/{announcements.length})
+                  </span>
+                )}
+              </div>
 
-              {/* Main Event Poster Image */}
-              <img
-                key={`img-${activeEvent.postId || currentIndex}`}
-                src={imageUrl}
-                alt={displayTitle}
-                className="relative max-h-full max-w-full object-contain z-10 select-none cursor-pointer transition-opacity duration-300"
-                onClick={() =>
-                  setPreviewPoster({
-                    isOpen: true,
-                    url: imageUrl,
-                    title: displayTitle,
-                  })
-                }
-                loading="eager"
-              />
-
-              {/* Top-Right Close Button */}
+              {/* Close Button */}
               <button
                 type="button"
                 onClick={handleClosePopup}
                 className="
-                  absolute
-                  top-3
-                  right-3
-                  z-30
                   flex
-                  h-9
-                  w-9
+                  h-8
+                  w-8
+                  sm:h-9
+                  sm:w-9
                   items-center
                   justify-center
                   rounded-full
-                  bg-black/65
-                  backdrop-blur-md
-                  border
-                  border-white/20
+                  bg-white/10
+                  hover:bg-white/20
                   text-white/80
                   hover:text-white
-                  hover:bg-black/90
-                  hover:scale-105
                   transition-all
                   duration-200
                   active:scale-95
-                  shadow-lg
                   cursor-pointer
                 "
                 aria-label="Close popup"
                 title="Close"
               >
-                <X size={18} strokeWidth={2.2} />
+                <X size={16} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
               </button>
+            </div>
 
-              {/* Previous / Next Arrows (Icon-only, across all upcoming events) */}
-              {events.length > 1 && (
+            {/* ----------------------------------------------------
+                CONTENT SECTION: IMAGE OR TEXT CARD
+                ---------------------------------------------------- */}
+            <div className="relative w-full flex-1 min-h-0 bg-[#040711] overflow-hidden flex flex-col items-center justify-center select-none">
+              {imageUrl ? (
+                /* Poster Image Area */
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                  {/* Ambient Backdrop */}
+                  <img
+                    key={`bg-${activeAnnouncement.AnnouncementId || activeAnnouncement._id || currentIndex}`}
+                    src={imageUrl}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 h-full w-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none transition-opacity duration-500"
+                  />
+
+                  {/* Main Announcement Image */}
+                  <img
+                    key={`img-${activeAnnouncement.AnnouncementId || activeAnnouncement._id || currentIndex}`}
+                    src={imageUrl}
+                    alt={displayTitle}
+                    className="relative max-h-full max-w-full object-contain z-10 select-none cursor-pointer transition-opacity duration-300 p-2 sm:p-3"
+                    onClick={() =>
+                      setPreviewPoster({
+                        isOpen: true,
+                        url: imageUrl,
+                        title: displayTitle,
+                      })
+                    }
+                    loading="eager"
+                  />
+                </div>
+              ) : (
+                /* Rich Typography Card when Announcement has no poster image */
+                <div className="relative w-full h-full flex flex-col justify-center items-center p-6 sm:p-10 text-center overflow-y-auto">
+                  <div className="mb-4 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600/20 to-cyan-500/20 border border-blue-500/30 text-blue-400 shadow-inner">
+                    <Sparkles size={32} className="sm:w-10 sm:h-10" />
+                  </div>
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-snug max-w-lg mb-3">
+                    {displayTitle}
+                  </h4>
+                  {displayDescription && (
+                    <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-lg line-clamp-6">
+                      {displayDescription}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Previous / Next Arrows (when multiple announcements) */}
+              {announcements.length > 1 && (
                 <>
                   <button
                     type="button"
-                    onClick={handlePrevEvent}
+                    onClick={handlePrevAnnouncement}
                     className="
                       absolute
                       left-2.5
+                      sm:left-4
                       top-1/2
                       -translate-y-1/2
                       z-30
                       flex
                       h-9
                       w-9
+                      sm:h-11
+                      sm:w-11
                       items-center
                       justify-center
                       rounded-full
-                      bg-black/65
+                      bg-black/70
                       backdrop-blur-md
                       border
                       border-white/20
-                      text-white/80
+                      text-white/90
                       hover:text-white
                       hover:bg-black/90
                       hover:scale-110
@@ -385,31 +427,34 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
                       shadow-md
                       cursor-pointer
                     "
-                    aria-label="Previous event"
+                    aria-label="Previous announcement"
                   >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
                   </button>
 
                   <button
                     type="button"
-                    onClick={handleNextEvent}
+                    onClick={handleNextAnnouncement}
                     className="
                       absolute
                       right-2.5
+                      sm:right-4
                       top-1/2
                       -translate-y-1/2
                       z-30
                       flex
                       h-9
                       w-9
+                      sm:h-11
+                      sm:w-11
                       items-center
                       justify-center
                       rounded-full
-                      bg-black/65
+                      bg-black/70
                       backdrop-blur-md
                       border
                       border-white/20
-                      text-white/80
+                      text-white/90
                       hover:text-white
                       hover:bg-black/90
                       hover:scale-110
@@ -418,14 +463,14 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
                       shadow-md
                       cursor-pointer
                     "
-                    aria-label="Next event"
+                    aria-label="Next announcement"
                   >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={20} className="sm:w-6 sm:h-6" />
                   </button>
 
                   {/* Sleek Pagination Dots */}
                   <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/15 max-w-[85%] overflow-x-auto scrollbar-none">
-                    {events.map((_, idx) => (
+                    {announcements.map((_, idx) => (
                       <button
                         key={idx}
                         type="button"
@@ -435,10 +480,10 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
                         }}
                         className={`h-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
                           idx === currentIndex
-                            ? 'w-5 bg-brand-blue-light'
+                            ? 'w-5 bg-blue-400'
                             : 'w-1.5 bg-white/40 hover:bg-white/70'
                         }`}
-                        aria-label={`Event ${idx + 1}`}
+                        aria-label={`Announcement ${idx + 1}`}
                       />
                     ))}
                   </div>
@@ -447,21 +492,34 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
             </div>
 
             {/* ----------------------------------------------------
-                BOTTOM SECTION: TITLE & "GO TO EVENTS" BUTTON ONLY
+                BOTTOM SECTION: TITLE, DESCRIPTION & DATE
                 ---------------------------------------------------- */}
-            <div className="shrink-0 p-4 sm:p-5 flex flex-col items-center justify-center gap-3 bg-[#060a14] border-t border-white/10">
-              {/* Event Title ONLY */}
-              <h3
-                id="upcoming-event-popup-title"
-                className="text-base sm:text-lg md:text-xl font-bold text-white text-center line-clamp-2 w-full px-2 leading-snug"
-              >
-                {displayTitle}
-              </h3>
+            <div className="shrink-0 p-4 sm:p-5 lg:px-6 lg:py-4.5 flex flex-col gap-2.5 sm:gap-3 bg-[#060a14] border-t border-white/10">
+              <div className="flex items-center justify-between gap-3">
+                <h3
+                  id="announcement-popup-title"
+                  className="text-base sm:text-lg lg:text-xl font-bold text-white line-clamp-1 leading-snug"
+                >
+                  {displayTitle}
+                </h3>
+                {formattedDate && (
+                  <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 shrink-0 font-medium">
+                    <Calendar size={13} className="text-blue-400" />
+                    {formattedDate}
+                  </span>
+                )}
+              </div>
 
-              {/* "Go to Events" Button ONLY */}
+              {imageUrl && displayDescription && (
+                <p className="text-xs sm:text-sm text-slate-300 line-clamp-2 leading-relaxed">
+                  {displayDescription}
+                </p>
+              )}
+
+              {/* Dismiss / Got it Button */}
               <button
                 type="button"
-                onClick={handleGoToEvents}
+                onClick={handleClosePopup}
                 className="
                   group
                   relative
@@ -475,8 +533,9 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
                   from-[#00629b]
                   via-[#0b63ff]
                   to-[#00a3ff]
-                  py-3
-                  px-6
+                  py-2.5
+                  sm:py-3
+                  px-4
                   text-sm
                   sm:text-base
                   font-bold
@@ -490,11 +549,7 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
                   cursor-pointer
                 "
               >
-                <span>Go to Events</span>
-                <ArrowRight
-                  size={17}
-                  className="transition-transform duration-200 group-hover:translate-x-1"
-                />
+                <span>Dismiss</span>
               </button>
             </div>
           </div>
@@ -504,7 +559,7 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
       {/* ========================================================
           FLOATING PILL / BADGE TRIGGER (WHEN POPUP IS DISMISSED)
           ======================================================== */}
-      {!isOpen && hasDismissed && !isPillDismissed && activeEvent && !location.pathname.startsWith('/activities/events') && (
+      {!isOpen && hasDismissed && !isPillDismissed && activeAnnouncement && !location.pathname.startsWith('/admin') && (
         <div className="fixed bottom-6 left-6 z-40 animate-fadeIn">
           <div
             onClick={handleReopenPopup}
@@ -537,26 +592,26 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
               hover:shadow-[0_10px_35px_rgba(0,98,155,0.6)]
               cursor-pointer
             "
-            title="Click to view upcoming events"
+            title="Click to view branch announcements"
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
             </span>
 
             <span className="max-w-[140px] sm:max-w-[200px] truncate text-white/90 group-hover:text-white font-medium">
               {displayTitle}
             </span>
 
-            <span className="rounded-full bg-brand-blue-cta px-2.5 py-0.5 text-[10px] font-bold text-white shadow">
-              Go to Events
+            <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+              Announcement
             </span>
 
             <button
               type="button"
               onClick={handleDismissPill}
               className="ml-1 rounded-full p-1 text-white/50 hover:bg-white/10 hover:text-white transition-colors"
-              aria-label="Dismiss floating event banner"
+              aria-label="Dismiss floating announcement banner"
               title="Dismiss"
             >
               <X size={13} />
@@ -575,3 +630,4 @@ export default function UpcomingEventsPopup({ isParentLoading = false }: Upcomin
     </>
   );
 }
+export { UpcomingEventsPopup as AnnouncementPopup };
