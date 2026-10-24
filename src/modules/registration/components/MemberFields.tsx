@@ -128,7 +128,7 @@ export default function MemberFields({ member, onChange, idPrefix }: MemberField
           htmlFor={`${idPrefix}-branch`}
           className="block text-xs font-semibold text-slate-300 mb-1.5"
         >
-          Engineering Branch (8 Options) <span className="text-rose-400">*</span>
+           Branch (9 Options) <span className="text-rose-400">*</span>
         </label>
         <select
           id={`${idPrefix}-branch`}

@@ -7,6 +7,8 @@ import Gallery from './components/Gallery';
 import JoinIeee from './components/join.CTA';
 import FAQ from './components/FAQ';
 
+
+
 export default function HomePage() {
   return (
     <div>

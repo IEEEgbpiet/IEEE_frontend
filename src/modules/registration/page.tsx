@@ -10,6 +10,7 @@ import {
 
 import { PREDEFINED_EVENTS, createEmptyMember } from '../../data/constants';
 import type { MemberFormState, PredefinedEvent, RegistrationMode } from './types';
+import { getAllowedModes } from './types';
 
 // Child Components
 import RegistrationHeader from './components/RegistrationHeader';
@@ -23,12 +24,29 @@ import RegistrationStatusModal from './components/RegistrationStatusModal';
 export default function RegistrationPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Event & Predefined Date State (First predefined event as default)
+  const [selectedEvent, setSelectedEvent] = useState<PredefinedEvent>(
+    PREDEFINED_EVENTS[0] || {
+      id: 'default',
+      name: 'Event',
+      date: '',
+      displayDate: '',
+      type: 'Both',
+    }
+  );
+
+  const { allowIndividual, allowTeam } = getAllowedModes(selectedEvent?.type);
+
   // Mode from URL query (e.g. ?mode=individual or ?mode=team)
   const rawModeParam = searchParams.get('mode')?.toLowerCase();
-  const activeMode: RegistrationMode = rawModeParam === 'team' ? 'team' : 'individual';
-
-  // Event & Predefined Date State (RAG Based AI is the default option with 3 July 2026)
-  const [selectedEvent, setSelectedEvent] = useState<PredefinedEvent>(PREDEFINED_EVENTS[0]);
+  const activeMode: RegistrationMode =
+    !allowIndividual && allowTeam
+      ? 'team'
+      : !allowTeam && allowIndividual
+      ? 'individual'
+      : rawModeParam === 'team'
+      ? 'team'
+      : 'individual';
 
   // Form States
   const [individualMember, setIndividualMember] = useState<MemberFormState>(createEmptyMember());
@@ -48,12 +66,41 @@ export default function RegistrationPage() {
     document.title = 'Event Registration | IEEE GBPIET Student Branch';
   }, []);
 
+  // Synchronize URL mode param if restricted by event type
+  useEffect(() => {
+    const { allowIndividual: canIndiv, allowTeam: canTeam } = getAllowedModes(selectedEvent?.type);
+    if (!canIndiv && canTeam && rawModeParam !== 'team') {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('mode', 'team');
+      setSearchParams(newParams, { replace: true });
+    } else if (!canTeam && canIndiv && rawModeParam === 'team') {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('mode', 'individual');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [selectedEvent?.type, rawModeParam, searchParams, setSearchParams]);
+
   // Update URL parameter when mode switches
   const handleModeChange = (mode: RegistrationMode) => {
+    const { allowIndividual: canIndiv, allowTeam: canTeam } = getAllowedModes(selectedEvent?.type);
+    if (mode === 'individual' && !canIndiv) return;
+    if (mode === 'team' && !canTeam) return;
+
     setErrorMessage('');
     const newParams = new URLSearchParams(searchParams);
     newParams.set('mode', mode);
     setSearchParams(newParams, { replace: true });
+  };
+
+  const handleSelectEvent = (event: PredefinedEvent) => {
+    setSelectedEvent(event);
+    setErrorMessage('');
+    const { allowIndividual: canIndiv, allowTeam: canTeam } = getAllowedModes(event.type);
+    if (!canIndiv && canTeam && activeMode !== 'team') {
+      handleModeChange('team');
+    } else if (!canTeam && canIndiv && activeMode !== 'individual') {
+      handleModeChange('individual');
+    }
   };
 
   // Team Member Management
@@ -104,6 +151,16 @@ export default function RegistrationPage() {
     // Predefined date from the selected event
     const eventName = selectedEvent.name;
     const eventDate = selectedEvent.date;
+
+    const { allowIndividual: canIndiv, allowTeam: canTeam } = getAllowedModes(selectedEvent?.type);
+    if (activeMode === 'individual' && !canIndiv) {
+      setErrorMessage('Individual registration is not available for this event.');
+      return;
+    }
+    if (activeMode === 'team' && !canTeam) {
+      setErrorMessage('Team registration is not available for this event.');
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -226,6 +283,7 @@ export default function RegistrationPage() {
             <ModeSelector
               activeMode={activeMode}
               onSelectMode={handleModeChange}
+              eventType={selectedEvent?.type}
             />
 
             {/* Error Banner */}
@@ -241,7 +299,7 @@ export default function RegistrationPage() {
               {/* Event Selector (With predefined auto-mapped date in JSX, no manual date input) */}
               <EventSelector
                 selectedEvent={selectedEvent}
-                onSelectEvent={setSelectedEvent}
+                onSelectEvent={handleSelectEvent}
               />
 
               {/* Individual Form or Team Form */}

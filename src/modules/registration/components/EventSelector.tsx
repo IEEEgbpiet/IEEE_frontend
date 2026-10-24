@@ -39,7 +39,7 @@ export default function EventSelector({
           >
             {PREDEFINED_EVENTS.map((event) => (
               <option key={event.id} value={event.id}>
-                {event.name}
+                {event.name} {event.type ? `(${event.type})` : ''}
               </option>
             ))}
           </select>
@@ -55,10 +55,17 @@ export default function EventSelector({
               <Calendar className="w-4 h-4 text-blue-400" />
               <span>{selectedEvent.displayDate}</span>
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <CheckCircle className="w-3 h-3" />
-              Auto-mapped
-            </span>
+            <div className="flex items-center gap-2">
+              {selectedEvent.type && (
+                <span className="inline-flex items-center text-[11px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 font-medium">
+                  {selectedEvent.type}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <CheckCircle className="w-3 h-3" />
+                Auto-mapped
+              </span>
+            </div>
           </div>
         </div>
       </div>

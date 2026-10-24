@@ -2,48 +2,12 @@ import type { MemberFormState, PredefinedEvent } from '../modules/registration/t
 
 // Predefined IEEE events with fixed, predefined dates
 export const PREDEFINED_EVENTS: PredefinedEvent[] = [
-  
-  {
-    id: 'ui-design-showcase-2026',
-    name: 'UI Design Showcase',
-    date: '2026-10-10',
-    displayDate: '10 October 2026',
-  },
-  {
-    id: 'poster-making-2026',
-    name: 'Poster Making',
-    date: '2026-10-10',
-    displayDate: '10 October 2026',
-  },
-  {
-    id: 'sociothon-2026',
-    name: 'Sociothon',
-    date: '2026-10-10',
-    displayDate: '10 October 2026',
-  },
-  {
-    id: 'opencv-filter-showcase-2026',
-    name: 'OpenCV Filter Showcase',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
-  },
-  {
-    id: 'rag-chatbot-workshop-2026',
-    name: 'RAG-Based Chatbot Workshop',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
-  },
-  {
-    id: 'genai-building-challenge-2026',
-    name: 'GenAI Building Challenge',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
-  },
-  {
-    id: 'precision-run-2026',
-    name: 'Precision Run',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
+  { // Both , Single , Team ... types for event Type 
+    id: 'KiCAD-2026',
+    type : "Single",
+    name: 'KiCAD-Workshop',
+    date: '2026-10-28',
+    displayDate: '28 October 2026',
   },
 ];
 
@@ -55,8 +19,9 @@ export const BRANCH_OPTIONS = [
   { value: 'EE', label: 'Electrical Engineering (EE)' },
   { value: 'ME', label: 'Mechanical Engineering (ME)' },
   { value: 'CE', label: 'Civil Engineering (CE)' },
-  { value: 'IT', label: 'Information Technology (IT)' },
   { value: 'BT', label: 'Biotechnology (BT)' },
+  { value: 'MFG', label: 'Manufacturing Engineering (MFG)' },
+  { value: 'BCA', label: 'Bachleor of Computer application (BCA)' },
 ];
 
 // Academic Year Options 1 to 4
