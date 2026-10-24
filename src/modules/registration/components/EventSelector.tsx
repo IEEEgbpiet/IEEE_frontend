@@ -39,7 +39,7 @@ export default function EventSelector({
           >
             {PREDEFINED_EVENTS.map((event) => (
               <option key={event.id} value={event.id}>
-                {event.name}
+                {event.name} 
               </option>
             ))}
           </select>
@@ -47,18 +47,20 @@ export default function EventSelector({
 
         {/* Predefined Event Date Badge (Read-only, passed directly from code/JSX) */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-            Event Date (Predefined)
-          </label>
+          {/* <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            Event Date 
+          </label> */}
           <div className="flex items-center justify-between bg-slate-950 border border-blue-500/30 rounded-xl px-3.5 py-2.5 text-sm">
             <div className="flex items-center gap-2 text-blue-300 font-semibold">
               <Calendar className="w-4 h-4 text-blue-400" />
               <span>{selectedEvent.displayDate}</span>
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <CheckCircle className="w-3 h-3" />
-              Auto-mapped
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <CheckCircle className="w-3 h-3" />
+                Auto-mapped
+              </span>
+            </div>
           </div>
         </div>
       </div>
