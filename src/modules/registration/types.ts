@@ -20,6 +20,8 @@ export interface PredefinedEvent {
 
 export function getAllowedModes(type?: string): { allowIndividual: boolean; allowTeam: boolean } {
   const normalized = (type || 'Both').trim().toLowerCase();
+
+  
   if (normalized === 'single' || normalized === 'individual') {
     return { allowIndividual: true, allowTeam: false };
   }
