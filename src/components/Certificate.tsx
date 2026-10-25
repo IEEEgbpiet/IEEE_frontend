@@ -24,7 +24,7 @@ import {
   adminApi,
   type CertificateApplication,
 } from "@/services/adminApi";
-import { PREDEFINED_EVENTS } from "@/data/constants";
+import { PREDEFINED_EVENTS } from "@/data/certificatesConstants";
 
 const BRANCH_OPTIONS = [
   {
