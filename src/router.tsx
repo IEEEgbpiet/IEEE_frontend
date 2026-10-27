@@ -23,7 +23,7 @@ export function AppRouter() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/activities/events" element={<EventsPage />} />
+          <Route path="/actvities" element={<EventsPage />} />
           <Route path="/activities/robotics" element={<RoboticsPage />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/certificate" element={<CertificateForm />} />
