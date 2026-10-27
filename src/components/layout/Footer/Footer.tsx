@@ -1,22 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Mail, ArrowUpRight, ChevronDown } from 'lucide-react';
+import { Mail, ArrowUpRight } from 'lucide-react';
 import { FaInstagram, FaLinkedinIn } from 'react-icons/fa';
-import { useState } from 'react';
 
 export default function Footer() {
-  const [activitiesOpen, setActivitiesOpen] = useState(false);
-
   const quickLinks = [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
-
-    {
-      name: 'Activities',
-      dropdown: [
-        { name: 'Events', href: '/activities/events' },
-        { name: 'Robotics', href: 'https://prasthanam-gbpiet.vercel.app/' },
-      ],
-    },
+    { name: 'Activities', href: '/actvities' },
     { name: 'Certificate', href: '/certificate' },
     { name: 'Teams', href: '/teams' },
     { name: 'Contact', href: '/contact' },
@@ -157,7 +147,7 @@ export default function Footer() {
               {quickLinks.map((link) => (
                 <div key={link.name} className="group relative w-full">
                   {/* Normal link */}
-                  {!link.dropdown && (
+                  {link && (
                     <Link
                       to={link.href}
                       className="
@@ -188,86 +178,6 @@ export default function Footer() {
                   )}
 
                   {/* Activities */}
-                  {link.dropdown && (
-                    <div className="w-full">
-                      {/* Activities heading */}
-                      <button
-                        type="button"
-                        onClick={() => setActivitiesOpen(!activitiesOpen)}
-                        className="
-                          flex w-full
-                          items-center gap-2
-                          py-2
-                          text-left
-                          text-base
-                          font-medium
-                          text-white/50
-                          transition-colors
-                          hover:text-white
-                          lg:cursor-default
-                        "
-                      >
-                        <span>{link.name}</span>
-
-                        <ChevronDown
-                          size={15}
-                          className={`
-                            transition-transform duration-300
-                            ${activitiesOpen ? 'rotate-180' : ''}
-                            lg:group-hover:rotate-180
-                          `}
-                        />
-                      </button>
-
-                      {/* Activities submenu */}
-                      <div
-                        className={`
-                          ml-3
-                          overflow-hidden
-                          border-l border-white/10
-                          pl-4
-                          transition-all duration-300
-                          ${activitiesOpen ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'}
-                          lg:max-h-0
-                          lg:opacity-0
-                          lg:group-hover:max-h-32
-                          lg:group-hover:opacity-100
-                        `}
-                      >
-                        <Link
-                          to="/activities/events"
-                          className="
-                            flex items-center gap-2
-                            py-2
-                            text-sm
-                            text-white/40
-                            transition-colors
-                            hover:text-[#008dcc]
-                          "
-                        >
-                          <span>Events</span>
-                          <ArrowUpRight size={12} />
-                        </Link>
-
-                        <Link
-                          to="https://prasthanam-gbpiet.vercel.app/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="
-                            flex items-center gap-2
-                            py-2
-                            text-sm
-                            text-white/40
-                            transition-colors
-                            hover:text-[#008dcc]
-                          "
-                        >
-                          <span>Robotics</span>
-                          <ArrowUpRight size={12} />
-                        </Link>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </nav>

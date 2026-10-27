@@ -27,19 +27,9 @@ export const navLinks: NavItem[] = [
   },
   {
     name: 'Activities',
-    dropdown: [
-      {
-        name: 'Events',
-        href: '/activities/events',
-        isExternal: false,
-      },
-      {
-        name: 'Robotics',
-        href: 'https://prasthanam-gbpiet.vercel.app/',
-        isExternal: true,
-      },
-    ],
+    href: '/actvities',
   },
+
   {
     name: 'Teams',
     href: '/teams',
@@ -48,7 +38,7 @@ export const navLinks: NavItem[] = [
     name: 'Registration',
     href: '/Registration',
   },
-    {
+  {
     name: 'Certificate',
     href: '/certificate',
   },
