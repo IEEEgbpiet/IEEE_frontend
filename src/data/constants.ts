@@ -5,9 +5,9 @@ export const PREDEFINED_EVENTS: PredefinedEvent[] = [
   { // Both , Single , Team ... types for event Type 
     id: 'KiCAD-2026',
     type : "Single",
-    name: 'KiCAD-Workshop',
-    date: '2026-10-28',
-    displayDate: '28 October 2026',
+    name: 'KiCAD-competition',
+    date: '2026-10-29',
+    displayDate: '29 October 2026',
   },
 ];
 
