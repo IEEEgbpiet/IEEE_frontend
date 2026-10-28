@@ -8,7 +8,7 @@ import {
   type RegistrationMember,
 } from '@/services/adminApi';
 
-import { PREDEFINED_EVENTS, createEmptyMember } from '../../data/constants';
+import { PREDEFINED_EVENTS, createEmptyMember } from '../../data/registrationConstants';
 import type { MemberFormState, PredefinedEvent, RegistrationMode } from './types';
 import { getAllowedModes } from './types';
 
