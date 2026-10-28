@@ -3,47 +3,17 @@ import type { MemberFormState, PredefinedEvent } from '../modules/registration/t
 // Predefined IEEE events with fixed, predefined dates
 export const PREDEFINED_EVENTS: PredefinedEvent[] = [
 
-  {
-    id: 'ui-design-showcase-2026',
-    name: 'UI Design Showcase',
-    date: '2026-10-10',
-    displayDate: '10 October 2026',
+  { // Both , Single , Team ... types for event Type 
+    id: 'KiCAD-2026',
+    name: 'KiCAD-competition',
+    date: '2026-10-29',
+    displayDate: '29 October 2026',
   },
-  {
-    id: 'poster-making-2026',
-    name: 'Poster Making',
-    date: '2026-10-10',
-    displayDate: '10 October 2026',
-  },
-  {
-    id: 'sociothon-2026',
-    name: 'Sociothon',
-    date: '2026-10-10',
-    displayDate: '10 October 2026',
-  },
-  {
-    id: 'opencv-filter-showcase-2026',
-    name: 'OpenCV Filter Showcase',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
-  },
-  {
-    id: 'rag-chatbot-workshop-2026',
-    name: 'RAG-Based Chatbot Workshop',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
-  },
-  {
-    id: 'genai-building-challenge-2026',
-    name: 'GenAI Building Challenge',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
-  },
-  {
-    id: 'precision-run-2026',
-    name: 'Precision Run',
-    date: '2026-10-11',
-    displayDate: '11 October 2026',
+    { // Both , Single , Team ... types for event Type 
+    id: 'KiCAD-2026',
+    name: 'KiCAD-Workshop',
+    date: '2026-10-28',
+    displayDate: '28 October 2026',
   },
 ];
 
@@ -67,6 +37,8 @@ export const YEAR_OPTIONS = [
   { value: 3, label: '3rd Year' },
   { value: 4, label: '4th Year' },
 ];
+
+
 export const createEmptyMember = (): MemberFormState => ({
   instituteId: '',
   name: '',
